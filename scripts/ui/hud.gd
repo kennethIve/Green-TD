@@ -117,7 +117,7 @@ func _wire_buttons() -> void:
 func _on_build(id: String) -> void:
 	if id == "sell":
 		set_build_selected("sell")
-		sell_pressed.emit()
+		sell_pressed.emit()  # enter sell mode; click tower to confirm
 	else:
 		set_build_selected(id)
 		build_pressed.emit(id)

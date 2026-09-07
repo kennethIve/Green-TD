@@ -44,6 +44,7 @@ func _ready() -> void:
 	status_label.text = "4-corner circle | Wave btn / Space = wave | Click = build/select"
 	_place_tower(Vector2(420, 260), "archer")
 	_place_tower(Vector2(860, 260), "frost")
+	# Web-friendly: auto-start wave 1; Wave button / Space also work
 	await get_tree().create_timer(1.2).timeout
 	_start_wave()
 
@@ -86,6 +87,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_pause() -> void:
 	get_tree().paused = not get_tree().paused
+	# Keep HUD processable
 	if hud:
 		hud.process_mode = Node.PROCESS_MODE_ALWAYS
 	status_label.text = "Paused" if get_tree().paused else "Resumed"
@@ -206,4 +208,3 @@ func _lose() -> void:
 func _refresh_hud() -> void:
 	if hud.has_method("set_resources"):
 		hud.set_resources(lives, gold, START_LIVES)
-
