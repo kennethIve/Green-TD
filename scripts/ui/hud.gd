@@ -1,11 +1,12 @@
 extends Control
-## Dark-glass HUD — 3 top pills, build glow, focus costs.
+## Dark-glass HUD - 3 top pills, build glow, focus costs.
 
 signal build_pressed(id: String)
 signal upgrade_pressed
 signal sell_pressed
 signal pause_pressed
 signal settings_pressed
+signal wave_pressed
 
 const ACCENT := Color("3DDC84")
 const PANEL_BG := Color(0.08, 0.1, 0.09, 0.85)
@@ -35,8 +36,8 @@ func _ready() -> void:
 	show_tower(null)
 
 func set_resources(lives: int, gold: int, lives_max: int = 40) -> void:
-	lives_label.text = "♥ %d / %d" % [lives, lives_max]
-	gold_label.text = "🪙 %d" % gold
+	lives_label.text = "HP %d / %d" % [lives, lives_max]
+	gold_label.text = "Gold %d" % gold
 
 func set_wave(n: int, total: int, secs: float, duration: float = -1.0) -> void:
 	wave_label.text = "Wave %d / %d" % [n, total]
@@ -56,10 +57,10 @@ func show_tower(data) -> void:
 		return
 	focus_card.visible = true
 	focus_name.text = str(data.get("name", "Tower"))
-	focus_dps.text = "DPS  %s   (+%s)" % [str(data.get("dps", "—")), str(data.get("dps_delta", 0))]
-	focus_range.text = "Range  %s   (+%s)" % [str(data.get("range", "—")), str(data.get("range_delta", 0))]
-	focus_upgrade_cost.text = "Upgrade  $%s" % str(data.get("upgrade_cost", "—"))
-	focus_sell_refund.text = "Refund  $%s" % str(data.get("sell_refund", "—"))
+	focus_dps.text = "DPS  %s   (+%s)" % [str(data.get("dps", "-")), str(data.get("dps_delta", 0))]
+	focus_range.text = "Range  %s   (+%s)" % [str(data.get("range", "-")), str(data.get("range_delta", 0))]
+	focus_upgrade_cost.text = "Upgrade  $%s" % str(data.get("upgrade_cost", "-"))
+	focus_sell_refund.text = "Refund  $%s" % str(data.get("sell_refund", "-"))
 
 func set_build_selected(id: String) -> void:
 	_selected_build = id
@@ -96,6 +97,8 @@ func _set_btn_glow(btn: Button, on: bool) -> void:
 func _wire_buttons() -> void:
 	%SettingsBtn.pressed.connect(func() -> void: settings_pressed.emit())
 	%PauseBtn.pressed.connect(func() -> void: pause_pressed.emit())
+	if has_node("%WaveBtn"):
+		%WaveBtn.pressed.connect(func() -> void: wave_pressed.emit())
 	upgrade_btn.pressed.connect(func() -> void: upgrade_pressed.emit())
 	sell_btn.pressed.connect(func() -> void: sell_pressed.emit())
 	upgrade_btn.add_theme_color_override("font_color", ACCENT)

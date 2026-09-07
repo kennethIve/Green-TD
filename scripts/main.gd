@@ -1,5 +1,5 @@
 extends Node2D
-## Green Circle TD — 4-corner axis-aligned rings, multi-tower, center leak.
+## Green Circle TD - 4-corner axis-aligned rings, multi-tower, center leak.
 
 const START_LIVES := 40
 const START_GOLD := 220
@@ -34,13 +34,18 @@ func _ready() -> void:
 	if hud.has_signal("pause_pressed"):
 		hud.pause_pressed.connect(_on_pause)
 	if hud.has_signal("settings_pressed"):
-		hud.settings_pressed.connect(func() -> void: status_label.text = "Settings — coming soon")
+		hud.settings_pressed.connect(func() -> void: status_label.text = "Settings - coming soon")
+	if hud.has_signal("wave_pressed"):
+		hud.wave_pressed.connect(_start_wave)
 	if hud.has_method("set_build_selected"):
 		hud.set_build_selected("archer")
 	_refresh_hud()
-	status_label.text = "4-corner circle · Space=wave · Click=build/select · Sell mode then click tower"
+	status_label.text = "4-corner circle | Wave btn / Space = wave | Click = build/select"
 	_place_tower(Vector2(420, 260), "archer")
 	_place_tower(Vector2(860, 260), "frost")
+	# Web-friendly: auto-start wave 1; Wave button / Space also work
+	await get_tree().create_timer(1.2).timeout
+	_start_wave()
 
 func _process(delta: float) -> void:
 	if _ended or _wave_time_left <= 0.0:
@@ -49,13 +54,18 @@ func _process(delta: float) -> void:
 	if hud.has_method("set_wave"):
 		hud.set_wave(spawner.wave_index, spawner.total_waves, _wave_time_left, _wave_duration)
 
+func _start_wave() -> void:
+	if _ended:
+		return
+	if not spawner.start_next_wave():
+		status_label.text = "Wave busy or finished"
+
 func _unhandled_input(event: InputEvent) -> void:
 	if _ended:
 		return
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_SPACE:
-			if not spawner.start_next_wave():
-				status_label.text = "Wave busy or finished"
+			_start_wave()
 		elif event.keycode == KEY_U:
 			_on_upgrade()
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -134,7 +144,7 @@ func _on_build_pressed(id: String) -> void:
 
 func _on_sell_mode() -> void:
 	_sell_mode = true
-	status_label.text = "Sell mode ON — click a tower to sell"
+	status_label.text = "Sell mode ON - click a tower to sell"
 
 func _sell_tower(t: Node2D) -> void:
 	gold += int(t.sell_refund)
@@ -179,7 +189,7 @@ func _on_wave_started(index: int, total: int) -> void:
 	_wave_time_left = _wave_duration
 	if hud.has_method("set_wave"):
 		hud.set_wave(index, total, _wave_time_left, _wave_duration)
-	status_label.text = "Wave %d / %d — 4 corners" % [index, total]
+	status_label.text = "Wave %d / %d - 4 corners" % [index, total]
 
 func _on_win() -> void:
 	if _ended:
@@ -194,4 +204,3 @@ func _lose() -> void:
 func _refresh_hud() -> void:
 	if hud.has_method("set_resources"):
 		hud.set_resources(lives, gold, START_LIVES)
-

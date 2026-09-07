@@ -37,14 +37,14 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.24, 0.86, 0.52, 1)
 theme_override_font_sizes/font_size = 18
-text = "♥ 40 / 40"
+text = "HP 40 / 40"
 
 [node name="GoldLabel" type="Label" parent="TopRow/ResourcesPill/Resources"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
 theme_override_font_sizes/font_size = 18
-text = "🪙 200"
+text = "Gold 220"
 
 [node name="WavePillPanel" type="PanelContainer" parent="TopRow"]
 unique_name_in_owner = true
@@ -87,15 +87,21 @@ theme_override_constants/separation = 8
 
 [node name="SettingsBtn" type="Button" parent="TopRow/SysPill/SysButtons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(56, 40)
 layout_mode = 2
-text = "⚙"
+text = "Menu"
 
 [node name="PauseBtn" type="Button" parent="TopRow/SysPill/SysButtons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(56, 40)
 layout_mode = 2
-text = "⏸"
+text = "Pause"
+
+[node name="WaveBtn" type="Button" parent="TopRow/SysPill/SysButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 40)
+layout_mode = 2
+text = "Wave"
 
 [node name="Minimap" type="PanelContainer" parent="."]
 unique_name_in_owner = true
@@ -183,9 +189,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -240.0
+offset_left = -320.0
 offset_top = -96.0
-offset_right = 240.0
+offset_right = 320.0
 offset_bottom = -16.0
 
 [node name="BuildTray" type="HBoxContainer" parent="BuildTrayPanel"]
@@ -197,29 +203,29 @@ theme_override_constants/separation = 8
 [node name="TowerBtn_archer" type="Button" parent="BuildTrayPanel/BuildTray"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "🏹"
+text = "Arch"
 
 [node name="TowerBtn_cannon" type="Button" parent="BuildTrayPanel/BuildTray"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "💣"
+text = "Cann"
 
 [node name="TowerBtn_frost" type="Button" parent="BuildTrayPanel/BuildTray"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "❄"
+text = "Frost"
 
 [node name="TowerBtn_lightning" type="Button" parent="BuildTrayPanel/BuildTray"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "⚡"
+text = "Bolt"
 
 [node name="TowerBtn_support" type="Button" parent="BuildTrayPanel/BuildTray"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "✧"
+text = "Aura"
 
 [node name="TowerBtn_sell" type="Button" parent="BuildTrayPanel/BuildTray"]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "💰"
+text = "Sell"
