@@ -20,6 +20,7 @@ var _selected_tower: Node2D = null
 var _wave_time_left: float = 0.0
 var _wave_duration: float = 24.0
 var _wave_end_msec: int = 0
+var _focus_open: bool = false
 
 func _ready() -> void:
 	spawner.creep_leaked.connect(_on_leak)
@@ -29,7 +30,7 @@ func _ready() -> void:
 	if hud.has_signal("build_pressed"):
 		hud.build_pressed.connect(_on_build_pressed)
 	if hud.has_signal("upgrade_pressed"):
-		hud.upgrade_pressed.connect(_on_upgrade)
+		hud.upgrade_pressed.connect(_on_upgrade_btn)
 	if hud.has_signal("sell_pressed"):
 		hud.sell_pressed.connect(_on_sell_mode)
 	if hud.has_signal("pause_pressed"):
@@ -40,8 +41,11 @@ func _ready() -> void:
 		hud.wave_pressed.connect(_start_wave)
 	if hud.has_method("set_build_selected"):
 		hud.set_build_selected("archer")
+	if hud.has_method("show_tower"):
+		hud.show_tower(null)
+	_focus_open = false
 	_refresh_hud()
-	status_label.text = "4-corner circle | Wave btn / Space = wave | Click = build/select"
+	status_label.text = "Click tower = select | U = upgrade menu | Upgrade btn = upgrade"
 	_place_tower(Vector2(420, 260), "archer")
 	_place_tower(Vector2(860, 260), "frost")
 	# Web-friendly: auto-start wave 1; Wave button / Space also work
@@ -70,7 +74,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_SPACE:
 			_start_wave()
 		elif event.keycode == KEY_U:
-			_on_upgrade()
+			_on_u_key()
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var pos := get_global_mouse_position()
 		var hit := _tower_at(pos)
@@ -83,26 +87,87 @@ func _unhandled_input(event: InputEvent) -> void:
 		if hit:
 			_select_tower(hit)
 			return
+		_deselect_tower()
 		_place_tower(pos, _build_id)
 
 func _on_pause() -> void:
 	get_tree().paused = not get_tree().paused
-	# Keep HUD processable
 	if hud:
 		hud.process_mode = Node.PROCESS_MODE_ALWAYS
 	status_label.text = "Paused" if get_tree().paused else "Resumed"
 
 func _tower_at(pos: Vector2) -> Node2D:
 	for t in towers.get_children():
-		if t.global_position.distance_to(pos) <= 22.0:
+		if t.global_position.distance_to(pos) <= 28.0:
 			return t
 	return null
 
+func _clear_selection_rings() -> void:
+	for t in towers.get_children():
+		if t.has_method("set_selected"):
+			t.set_selected(false)
+
+## Click tower → selection ring ONLY. Do NOT auto-open FocusCard.
 func _select_tower(t: Node2D) -> void:
+	_clear_selection_rings()
 	_selected_tower = t
 	_sell_mode = false
-	if hud.has_method("show_tower") and t.has_method("focus_data"):
-		hud.show_tower(t.focus_data())
+	_focus_open = false
+	if t.has_method("set_selected"):
+		t.set_selected(true)
+	if hud.has_method("show_tower"):
+		hud.show_tower(null)
+	status_label.text = "Selected %s (press U for upgrade menu)" % str(t.get("tower_id"))
+
+func _deselect_tower() -> void:
+	_clear_selection_rings()
+	_selected_tower = null
+	_focus_open = false
+	if hud.has_method("show_tower"):
+		hud.show_tower(null)
+
+## U opens panel first if closed; when already open, U also upgrades (optional convenience).
+## Prefer: U opens panel first if closed; UpgradeBtn upgrades.
+func _on_u_key() -> void:
+	if _selected_tower == null or not is_instance_valid(_selected_tower):
+		status_label.text = "Select a tower first"
+		return
+	if not _focus_open:
+		_open_focus_panel()
+		return
+	# Panel already open: keep focus refreshed; do not upgrade on U (UpgradeBtn does that)
+	_open_focus_panel()
+	status_label.text = "Use Upgrade button to upgrade"
+
+func _open_focus_panel() -> void:
+	if _selected_tower == null or not is_instance_valid(_selected_tower):
+		return
+	_focus_open = true
+	if hud.has_method("show_tower") and _selected_tower.has_method("focus_data"):
+		hud.show_tower(_selected_tower.focus_data())
+
+func _on_upgrade_btn() -> void:
+	# UpgradeBtn upgrades (opens panel if needed so costs stay visible)
+	if _selected_tower == null or not is_instance_valid(_selected_tower):
+		return
+	if not _focus_open:
+		_open_focus_panel()
+	_do_upgrade()
+
+func _do_upgrade() -> void:
+	if _selected_tower == null or not is_instance_valid(_selected_tower):
+		return
+	var cost: int = int(_selected_tower.upgrade_cost)
+	if gold < cost:
+		status_label.text = "Need $%d to upgrade" % cost
+		return
+	if _selected_tower.upgrade():
+		gold -= cost
+		if _selected_tower.has_method("set_selected"):
+			_selected_tower.set_selected(true)
+		_open_focus_panel()
+		_refresh_hud()
+		status_label.text = "Upgraded to Lv%d" % int(_selected_tower.level)
 
 func _on_path(pos: Vector2) -> bool:
 	for path_name in ["PathTL", "PathTR", "PathBR", "PathBL"]:
@@ -153,25 +218,13 @@ func _sell_tower(t: Node2D) -> void:
 	gold += int(t.sell_refund)
 	if _selected_tower == t:
 		_selected_tower = null
+		_focus_open = false
 		if hud.has_method("show_tower"):
 			hud.show_tower(null)
 	t.queue_free()
 	_sell_mode = false
 	_refresh_hud()
 	status_label.text = "Sold"
-
-func _on_upgrade() -> void:
-	if _selected_tower == null or not is_instance_valid(_selected_tower):
-		return
-	var cost: int = int(_selected_tower.upgrade_cost)
-	if gold < cost:
-		status_label.text = "Need $%d to upgrade" % cost
-		return
-	if _selected_tower.upgrade():
-		gold -= cost
-		_select_tower(_selected_tower)
-		_refresh_hud()
-		status_label.text = "Upgraded"
 
 func _on_leak() -> void:
 	if _ended:

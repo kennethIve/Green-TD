@@ -14,6 +14,10 @@ class_name Tower
 
 var _cooldown: float = 0.0
 var _color: Color = Color(0.2, 0.55, 0.35, 1)
+var selected: bool = false
+var _pulse: float = 0.0
+var _sprite: Sprite2D
+var _fx_nodes: Array = []
 
 const DEFS := {
 	"archer": {"dmg": 8, "range": 200.0, "rate": 0.55, "cost": 50, "up": 70, "sell": 25, "slow": 1.0, "aura": 0.0, "color": Color(0.35, 0.75, 0.45)},
@@ -21,6 +25,14 @@ const DEFS := {
 	"frost": {"dmg": 4, "range": 170.0, "rate": 0.8, "cost": 60, "up": 80, "sell": 30, "slow": 0.55, "aura": 0.0, "color": Color(0.4, 0.7, 0.95)},
 	"lightning": {"dmg": 12, "range": 220.0, "rate": 0.9, "cost": 90, "up": 110, "sell": 45, "slow": 1.0, "aura": 0.0, "color": Color(0.85, 0.85, 0.3)},
 	"support": {"dmg": 0, "range": 160.0, "rate": 0.5, "cost": 70, "up": 90, "sell": 35, "slow": 1.0, "aura": 0.25, "color": Color(0.7, 0.4, 0.85)},
+}
+
+const ART_ID := {
+	"archer": "archer",
+	"cannon": "cannon",
+	"frost": "frost",
+	"lightning": "lightning",
+	"support": "support",
 }
 
 func apply_id(id: String) -> void:
@@ -36,6 +48,7 @@ func apply_id(id: String) -> void:
 	aura_damage_bonus = float(d["aura"])
 	_color = d["color"]
 	level = 1
+	_refresh_sprite()
 	queue_redraw()
 
 func upgrade() -> bool:
@@ -51,8 +64,13 @@ func upgrade() -> bool:
 		aura_damage_bonus += 0.1
 	sell_refund = int(sell_refund * 1.4)
 	upgrade_cost = int(upgrade_cost * 1.5)
+	_refresh_sprite()
 	queue_redraw()
 	return true
+
+func set_selected(on: bool) -> void:
+	selected = on
+	queue_redraw()
 
 func focus_data() -> Dictionary:
 	return {
@@ -65,11 +83,41 @@ func focus_data() -> Dictionary:
 		"range_delta": int(range_px * 0.08),
 	}
 
+func _ready() -> void:
+	add_to_group("towers")
+	_ensure_sprite()
+	_refresh_sprite()
+
+func _ensure_sprite() -> void:
+	if _sprite != null and is_instance_valid(_sprite):
+		return
+	_sprite = Sprite2D.new()
+	_sprite.name = "TierSprite"
+	_sprite.centered = true
+	_sprite.position = Vector2(0, -4)
+	_sprite.z_index = 1
+	add_child(_sprite)
+
+func _refresh_sprite() -> void:
+	_ensure_sprite()
+	var art: String = ART_ID.get(tower_id, "archer")
+	var path := "res://assets/towers/%s_lv%d.png" % [art, clampi(level, 1, 3)]
+	if ResourceLoader.exists(path):
+		_sprite.texture = load(path)
+		_sprite.visible = true
+	else:
+		_sprite.texture = null
+		_sprite.visible = false
+
 func _process(delta: float) -> void:
+	_pulse += delta
+	if selected:
+		queue_redraw()
 	_cooldown = maxf(_cooldown - delta, 0.0)
 	if _cooldown > 0.0:
 		return
 	if aura_damage_bonus > 0.0:
+		_play_attack_fx(null)
 		_tick_aura()
 		_cooldown = fire_interval
 		return
@@ -82,10 +130,10 @@ func _process(delta: float) -> void:
 		target.take_damage(dmg)
 	if slow_mult < 1.0 and target.has_method("apply_slow"):
 		target.apply_slow(slow_mult, 1.2)
+	_play_attack_fx(target)
 	_cooldown = fire_interval
 
 func _tick_aura() -> void:
-	# Support: pulse exists visually; damage towers query aura via _nearby_aura_bonus
 	queue_redraw()
 
 func _nearby_aura_bonus() -> float:
@@ -98,9 +146,6 @@ func _nearby_aura_bonus() -> float:
 		if global_position.distance_to(n.global_position) <= float(n.get("range_px")):
 			bonus += float(n.get("aura_damage_bonus"))
 	return bonus
-
-func _ready() -> void:
-	add_to_group("towers")
 
 func _find_target():
 	var best = null
@@ -115,6 +160,126 @@ func _find_target():
 	return best
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, 16.0 + level * 2.0, _color)
-	var a := 0.22 if aura_damage_bonus > 0.0 else 0.15
-	draw_arc(Vector2.ZERO, range_px, 0.0, TAU, 40, Color(_color.r, _color.g, _color.b, a), 1.0)
+	# Subtle range arc when selected (or support aura always faint)
+	var range_a := 0.0
+	if selected:
+		range_a = 0.18
+	elif aura_damage_bonus > 0.0:
+		range_a = 0.10
+	if range_a > 0.0:
+		draw_arc(Vector2.ZERO, range_px, 0.0, TAU, 48, Color(_color.r, _color.g, _color.b, range_a), 1.2, true)
+	# Selection ring: green dashed + light pulse
+	if selected:
+		var pulse := 0.55 + 0.35 * sin(_pulse * 4.0)
+		var r := 28.0 + 2.0 * sin(_pulse * 3.0)
+		_draw_dashed_circle(Vector2.ZERO, r, Color(0.24, 0.86, 0.52, pulse), 2.0, 16, 10)
+		draw_arc(Vector2.ZERO, r + 3.0, 0.0, TAU, 40, Color(0.5, 1.0, 0.7, pulse * 0.25), 1.0, true)
+	# Fallback body if no texture
+	if _sprite == null or _sprite.texture == null:
+		draw_circle(Vector2.ZERO, 16.0 + level * 2.0, _color)
+
+func _draw_dashed_circle(center: Vector2, radius: float, color: Color, width: float, dashes: int, gap_deg: float) -> void:
+	var step := TAU / float(dashes)
+	var gap := deg_to_rad(gap_deg)
+	for i in dashes:
+		var a0 := i * step + gap * 0.5
+		var a1 := (i + 1) * step - gap * 0.5
+		if a1 <= a0:
+			continue
+		draw_arc(center, radius, a0, a1, 8, color, width, true)
+
+func _play_attack_fx(target) -> void:
+	match tower_id:
+		"archer":
+			_fx_arch_trail(target)
+		"cannon":
+			_fx_cann_flash(target)
+		"frost":
+			_fx_frost_pulse()
+		"lightning":
+			_fx_bolt_arc(target)
+		"support":
+			_fx_aura_breathe()
+		_:
+			pass
+
+func _fx_arch_trail(target) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	var line := Line2D.new()
+	line.width = 2.0
+	line.default_color = Color(0.45, 0.95, 0.55, 0.9)
+	line.z_index = 5
+	var to: Vector2 = to_local(target.global_position)
+	line.points = PackedVector2Array([Vector2(0, -8), to * 0.35, to])
+	add_child(line)
+	var tw := create_tween()
+	tw.tween_property(line, "modulate:a", 0.0, 0.22)
+	tw.tween_callback(line.queue_free)
+
+func _fx_cann_flash(target) -> void:
+	var flash := Polygon2D.new()
+	flash.color = Color(1.0, 0.75, 0.25, 0.95)
+	flash.z_index = 5
+	var dir := Vector2.RIGHT
+	if target != null and is_instance_valid(target):
+		dir = (target.global_position - global_position).normalized()
+	var tip := dir * 22.0
+	flash.polygon = PackedVector2Array([
+		tip + dir.rotated(0.6) * 10.0,
+		tip + dir * 16.0,
+		tip + dir.rotated(-0.6) * 10.0,
+		dir * 10.0,
+	])
+	add_child(flash)
+	var tw := create_tween()
+	tw.tween_property(flash, "modulate:a", 0.0, 0.15)
+	tw.tween_callback(flash.queue_free)
+
+func _fx_frost_pulse() -> void:
+	var ring := Line2D.new()
+	ring.width = 2.5
+	ring.default_color = Color(0.45, 0.85, 1.0, 0.85)
+	ring.z_index = 5
+	var pts := PackedVector2Array()
+	for i in 28:
+		var a := TAU * float(i) / 27.0
+		pts.append(Vector2(cos(a), sin(a)) * 12.0)
+	ring.points = pts
+	add_child(ring)
+	var tw := create_tween()
+	tw.tween_property(ring, "scale", Vector2(2.4, 2.4), 0.28)
+	tw.parallel().tween_property(ring, "modulate:a", 0.0, 0.28)
+	tw.tween_callback(ring.queue_free)
+
+func _fx_bolt_arc(target) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	var line := Line2D.new()
+	line.width = 2.2
+	line.default_color = Color(0.95, 0.95, 0.35, 0.95)
+	line.z_index = 5
+	var to: Vector2 = to_local(target.global_position)
+	var mid := to * 0.5 + Vector2(randf_range(-12, 12), randf_range(-12, 12))
+	var mid2 := to * 0.75 + Vector2(randf_range(-8, 8), randf_range(-8, 8))
+	line.points = PackedVector2Array([Vector2(0, -10), mid, mid2, to])
+	add_child(line)
+	var tw := create_tween()
+	tw.tween_property(line, "modulate:a", 0.0, 0.18)
+	tw.tween_callback(line.queue_free)
+
+func _fx_aura_breathe() -> void:
+	var ring := Line2D.new()
+	ring.width = 2.0
+	ring.default_color = Color(0.75, 0.45, 0.95, 0.7)
+	ring.z_index = 4
+	var pts := PackedVector2Array()
+	for i in 32:
+		var a := TAU * float(i) / 31.0
+		pts.append(Vector2(cos(a), sin(a)) * 18.0)
+	ring.points = pts
+	add_child(ring)
+	var tw := create_tween()
+	tw.tween_property(ring, "scale", Vector2(1.8, 1.8), 0.4)
+	tw.parallel().tween_property(ring, "modulate:a", 0.0, 0.4)
+	tw.tween_callback(ring.queue_free)

@@ -45,8 +45,9 @@ func _spawn_wave() -> void:
 			creep.max_hp = 20 + wave_index * hp_per_wave
 			creep.reward = 6 + wave_index * 2
 			creep.speed = 80.0 + wave_index * 4.0
+			var ctype := (wave_index + i) % 6
 			add_child(creep)
-			creep.setup(pts)
+			creep.setup(pts, ctype)
 			creep.leaked.connect(_on_leaked)
 			creep.died.connect(_on_died)
 			_alive += 1

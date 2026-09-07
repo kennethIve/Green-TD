@@ -122,6 +122,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="FocusCard" type="PanelContainer" parent="."]
+visible = false
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 6

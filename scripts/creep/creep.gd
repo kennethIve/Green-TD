@@ -7,6 +7,7 @@ signal died(reward: int)
 @export var speed: float = 90.0
 @export var max_hp: int = 30
 @export var reward: int = 12
+@export var creep_type: int = 0
 
 var hp: int = 30
 var _points: PackedVector2Array = []
@@ -16,20 +17,56 @@ var _slow_mult: float = 1.0
 var _slow_timer: float = 0.0
 
 @onready var _hp_label: Label = $HpLabel
+@onready var _body: ColorRect = get_node_or_null("Body")
+var _sprite: Sprite2D
 
 func _ready() -> void:
 	add_to_group("creeps")
+	_ensure_sprite()
+	_apply_creep_art()
+	if _body:
+		_body.visible = false
 
-func setup(points: PackedVector2Array) -> void:
+func setup(points: PackedVector2Array, type_id: int = -1) -> void:
 	_points = points
 	hp = max_hp
 	_resolved = false
 	_slow_mult = 1.0
 	_slow_timer = 0.0
+	if type_id >= 0:
+		creep_type = type_id
 	if _points.size() > 0:
 		global_position = _points[0]
 		_idx = 1
+	_ensure_sprite()
+	_apply_creep_art()
+	if _body:
+		_body.visible = false
 	_update_hp()
+
+func _ensure_sprite() -> void:
+	if _sprite != null and is_instance_valid(_sprite):
+		return
+	_sprite = get_node_or_null("CreepSprite") as Sprite2D
+	if _sprite == null:
+		_sprite = Sprite2D.new()
+		_sprite.name = "CreepSprite"
+		_sprite.centered = true
+		_sprite.z_index = 1
+		add_child(_sprite)
+
+func _apply_creep_art() -> void:
+	_ensure_sprite()
+	var id := clampi(creep_type, 0, 5)
+	var path := "res://assets/creeps/creep_%d.png" % id
+	if ResourceLoader.exists(path):
+		_sprite.texture = load(path)
+		_sprite.visible = true
+	else:
+		_sprite.texture = null
+		_sprite.visible = false
+		if _body:
+			_body.visible = true
 
 func apply_slow(mult: float, duration: float) -> void:
 	_slow_mult = minf(_slow_mult, mult)

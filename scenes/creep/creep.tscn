@@ -11,11 +11,15 @@ collision_mask = 0
 script = ExtResource("1_creep")
 
 [node name="Body" type="ColorRect" parent="."]
+visible = false
 offset_left = -14.0
 offset_top = -14.0
 offset_right = 14.0
 offset_bottom = 14.0
 color = Color(0.75, 0.25, 0.2, 1)
+
+[node name="CreepSprite" type="Sprite2D" parent="."]
+z_index = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_1")
