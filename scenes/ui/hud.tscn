@@ -1,0 +1,213 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqhudgreentd001"]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="TopBarPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 12.0
+offset_right = -16.0
+offset_bottom = 72.0
+grow_horizontal = 2
+
+[node name="TopBar" type="HBoxContainer" parent="TopBarPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Resources" type="HBoxContainer" parent="TopBarPanel/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="LivesLabel" type="Label" parent="TopBarPanel/TopBar/Resources"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.86, 0.52, 1)
+theme_override_font_sizes/font_size = 18
+text = "♥ 25"
+
+[node name="GoldLabel" type="Label" parent="TopBarPanel/TopBar/Resources"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "🪙 680"
+
+[node name="WavePill" type="VBoxContainer" parent="TopBarPanel/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WaveRow" type="HBoxContainer" parent="TopBarPanel/TopBar/WavePill"]
+layout_mode = 2
+
+[node name="WaveLabel" type="Label" parent="TopBarPanel/TopBar/WavePill/WaveRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "Wave 7 / 30"
+
+[node name="TimerLabel" type="Label" parent="TopBarPanel/TopBar/WavePill/WaveRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.86, 0.52, 1)
+theme_override_font_sizes/font_size = 16
+text = "18s"
+
+[node name="WaveBar" type="ProgressBar" parent="TopBarPanel/TopBar/WavePill"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+max_value = 30.0
+value = 18.0
+show_percentage = false
+
+[node name="SysButtons" type="HBoxContainer" parent="TopBarPanel/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SettingsBtn" type="Button" parent="TopBarPanel/TopBar/SysButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 36)
+layout_mode = 2
+text = "Settings"
+
+[node name="PauseBtn" type="Button" parent="TopBarPanel/TopBar/SysButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 36)
+layout_mode = 2
+text = "Pause"
+
+[node name="Minimap" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 16.0
+offset_top = -80.0
+offset_right = 176.0
+offset_bottom = 80.0
+grow_vertical = 2
+
+[node name="MinimapLabel" type="Label" parent="Minimap"]
+layout_mode = 2
+text = "Minimap"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FocusCard" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -110.0
+offset_right = -16.0
+offset_bottom = 110.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="FocusVBox" type="VBoxContainer" parent="FocusCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FocusName" type="Label" parent="FocusCard/FocusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.86, 0.52, 1)
+theme_override_font_sizes/font_size = 20
+text = "Eldarin Archer"
+
+[node name="FocusDps" type="Label" parent="FocusCard/FocusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "DPS  42"
+
+[node name="FocusRange" type="Label" parent="FocusCard/FocusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Range  320"
+
+[node name="FocusActions" type="HBoxContainer" parent="FocusCard/FocusVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="UpgradeBtn" type="Button" parent="FocusCard/FocusVBox/FocusActions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade"
+
+[node name="SellBtn" type="Button" parent="FocusCard/FocusVBox/FocusActions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sell"
+
+[node name="BuildTrayPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -320.0
+offset_top = -96.0
+offset_right = 320.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="BuildTray" type="HBoxContainer" parent="BuildTrayPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="TowerBtn_archer" type="Button" parent="BuildTrayPanel/BuildTray"]
+custom_minimum_size = Vector2(88, 56)
+layout_mode = 2
+text = "Archer"
+
+[node name="TowerBtn_cannon" type="Button" parent="BuildTrayPanel/BuildTray"]
+custom_minimum_size = Vector2(88, 56)
+layout_mode = 2
+text = "Cannon"
+
+[node name="TowerBtn_frost" type="Button" parent="BuildTrayPanel/BuildTray"]
+custom_minimum_size = Vector2(88, 56)
+layout_mode = 2
+text = "Frost"
+
+[node name="TowerBtn_lightning" type="Button" parent="BuildTrayPanel/BuildTray"]
+custom_minimum_size = Vector2(88, 56)
+layout_mode = 2
+text = "Bolt"
+
+[node name="TowerBtn_support" type="Button" parent="BuildTrayPanel/BuildTray"]
+custom_minimum_size = Vector2(88, 56)
+layout_mode = 2
+text = "Support"
+
+[node name="TowerBtn_sell" type="Button" parent="BuildTrayPanel/BuildTray"]
+custom_minimum_size = Vector2(88, 56)
+layout_mode = 2
+text = "Sell"

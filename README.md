@@ -18,12 +18,15 @@ Warcraft 3 **Green TD** remake — single-player first; Steam / online later.
 | Path | Purpose |
 |------|---------|
 | `project.godot` | Godot project config |
-| `scenes/main.tscn` | Runnable root scene |
-| `scripts/main.gd` | Main entry script |
+| `scenes/main.tscn` | Runnable root + CanvasLayer HUD |
+| `scenes/ui/hud.tscn` | Dark-glass HUD (top bar, minimap, focus card, build tray) |
+| `scripts/ui/hud.gd` | HUD API + F5 demo data |
+| `scripts/main.gd` | Main entry; wires HUD signals |
 | `icon.svg` | Placeholder app icon |
 
-## Milestone 1 status
+## Milestone status
 
-Runnable Godot 4 skeleton is in place. Next: map path, towers, waves, lives/gold HUD (UI/UX can port Control nodes onto this root).
+- Runnable Godot 4 skeleton + modern HUD shell on `main`
+- Next: map path, towers, waves, live resources wired to HUD
 
 Steam multiplayer is out of scope for now.
