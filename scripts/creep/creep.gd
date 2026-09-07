@@ -77,8 +77,18 @@ func take_damage(amount: int) -> void:
 		return
 	hp -= amount
 	_update_hp()
+	_hit_flash()
 	if hp <= 0:
 		_resolve_death()
+
+func _hit_flash() -> void:
+	# Cheap white flash — designer noted prior hit feedback was too pale.
+	var node: CanvasItem = _sprite if _sprite != null and is_instance_valid(_sprite) and _sprite.visible else (_body as CanvasItem)
+	if node == null or not is_instance_valid(node):
+		return
+	node.modulate = Color(1.6, 1.6, 1.6, 1.0)
+	var tw := create_tween()
+	tw.tween_property(node, "modulate", Color.WHITE, 0.12)
 
 func _resolve_death() -> void:
 	if _resolved:

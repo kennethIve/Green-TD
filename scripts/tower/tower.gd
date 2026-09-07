@@ -19,12 +19,14 @@ var _pulse: float = 0.0
 var _sprite: Sprite2D
 var _fx_nodes: Array = []
 
+# Fire intervals (s): WC3-like cadence — archer fastest, lightning medium-fast,
+# frost medium, cannon slow heavy, support slow aura breathe.
 const DEFS := {
-	"archer": {"dmg": 8, "range": 200.0, "rate": 0.55, "cost": 50, "up": 70, "sell": 25, "slow": 1.0, "aura": 0.0, "color": Color(0.35, 0.75, 0.45)},
-	"cannon": {"dmg": 18, "range": 150.0, "rate": 1.1, "cost": 80, "up": 100, "sell": 40, "slow": 1.0, "aura": 0.0, "color": Color(0.75, 0.45, 0.25)},
-	"frost": {"dmg": 4, "range": 170.0, "rate": 0.8, "cost": 60, "up": 80, "sell": 30, "slow": 0.55, "aura": 0.0, "color": Color(0.4, 0.7, 0.95)},
-	"lightning": {"dmg": 12, "range": 220.0, "rate": 0.9, "cost": 90, "up": 110, "sell": 45, "slow": 1.0, "aura": 0.0, "color": Color(0.85, 0.85, 0.3)},
-	"support": {"dmg": 0, "range": 160.0, "rate": 0.5, "cost": 70, "up": 90, "sell": 35, "slow": 1.0, "aura": 0.25, "color": Color(0.7, 0.4, 0.85)},
+	"archer": {"dmg": 7, "range": 200.0, "rate": 0.40, "cost": 50, "up": 70, "sell": 25, "slow": 1.0, "aura": 0.0, "color": Color(0.35, 0.75, 0.45)},
+	"cannon": {"dmg": 28, "range": 150.0, "rate": 1.40, "cost": 80, "up": 100, "sell": 40, "slow": 1.0, "aura": 0.0, "color": Color(0.75, 0.45, 0.25)},
+	"frost": {"dmg": 5, "range": 170.0, "rate": 0.75, "cost": 60, "up": 80, "sell": 30, "slow": 0.55, "aura": 0.0, "color": Color(0.4, 0.7, 0.95)},
+	"lightning": {"dmg": 11, "range": 220.0, "rate": 0.55, "cost": 90, "up": 110, "sell": 45, "slow": 1.0, "aura": 0.0, "color": Color(0.85, 0.85, 0.3)},
+	"support": {"dmg": 0, "range": 160.0, "rate": 1.80, "cost": 70, "up": 90, "sell": 35, "slow": 1.0, "aura": 0.25, "color": Color(0.7, 0.4, 0.85)},
 }
 
 const ART_ID := {
@@ -207,8 +209,8 @@ func _fx_arch_trail(target) -> void:
 	if target == null or not is_instance_valid(target):
 		return
 	var line := Line2D.new()
-	line.width = 2.0
-	line.default_color = Color(0.45, 0.95, 0.55, 0.9)
+	line.width = 2.6
+	line.default_color = Color(0.55, 1.0, 0.65, 1.0)
 	line.z_index = 5
 	var to: Vector2 = to_local(target.global_position)
 	line.points = PackedVector2Array([Vector2(0, -8), to * 0.35, to])
@@ -219,7 +221,7 @@ func _fx_arch_trail(target) -> void:
 
 func _fx_cann_flash(target) -> void:
 	var flash := Polygon2D.new()
-	flash.color = Color(1.0, 0.75, 0.25, 0.95)
+	flash.color = Color(1.0, 0.85, 0.35, 1.0)
 	flash.z_index = 5
 	var dir := Vector2.RIGHT
 	if target != null and is_instance_valid(target):
@@ -238,8 +240,8 @@ func _fx_cann_flash(target) -> void:
 
 func _fx_frost_pulse() -> void:
 	var ring := Line2D.new()
-	ring.width = 2.5
-	ring.default_color = Color(0.45, 0.85, 1.0, 0.85)
+	ring.width = 3.0
+	ring.default_color = Color(0.55, 0.95, 1.0, 1.0)
 	ring.z_index = 5
 	var pts := PackedVector2Array()
 	for i in 28:
@@ -256,8 +258,8 @@ func _fx_bolt_arc(target) -> void:
 	if target == null or not is_instance_valid(target):
 		return
 	var line := Line2D.new()
-	line.width = 2.2
-	line.default_color = Color(0.95, 0.95, 0.35, 0.95)
+	line.width = 2.8
+	line.default_color = Color(1.0, 1.0, 0.55, 1.0)
 	line.z_index = 5
 	var to: Vector2 = to_local(target.global_position)
 	var mid := to * 0.5 + Vector2(randf_range(-12, 12), randf_range(-12, 12))
@@ -270,8 +272,8 @@ func _fx_bolt_arc(target) -> void:
 
 func _fx_aura_breathe() -> void:
 	var ring := Line2D.new()
-	ring.width = 2.0
-	ring.default_color = Color(0.75, 0.45, 0.95, 0.7)
+	ring.width = 2.5
+	ring.default_color = Color(0.85, 0.55, 1.0, 0.9)
 	ring.z_index = 4
 	var pts := PackedVector2Array()
 	for i in 32:

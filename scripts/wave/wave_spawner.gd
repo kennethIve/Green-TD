@@ -14,6 +14,27 @@ signal creep_killed(reward: int)
 @export var total_waves: int = 8
 @export var hp_per_wave: int = 8
 
+# Designer sheet mapping (creep_0 early … creep_5 late/boss):
+# W1–2→0 紅方塊, W3–4→1 橙甲蟲, W5→2 紫刺獸, W6→3 石魔, W7→4 飛蟲, W8→5 boss 魔眼
+const TYPE_BY_WAVE := {
+	1: 0, 2: 0,
+	3: 1, 4: 1,
+	5: 2,
+	6: 3,
+	7: 4,
+	8: 5,
+}
+
+# Per-type multipliers stacked on wave baseline (hp / speed / reward).
+const TYPE_STATS := {
+	0: {"hp": 1.00, "spd": 1.00, "rew": 1.00},  # 紅方塊
+	1: {"hp": 1.15, "spd": 1.05, "rew": 1.10},  # 橙甲蟲
+	2: {"hp": 1.35, "spd": 0.95, "rew": 1.25},  # 紫刺獸
+	3: {"hp": 1.70, "spd": 0.80, "rew": 1.45},  # 石魔 tank
+	4: {"hp": 1.20, "spd": 1.30, "rew": 1.55},  # 飛蟲 fast
+	5: {"hp": 2.40, "spd": 0.90, "rew": 2.80},  # boss 魔眼
+}
+
 var wave_index: int = 0
 var _alive: int = 0
 var _spawning: bool = false
@@ -28,6 +49,9 @@ func start_next_wave() -> bool:
 	_spawn_wave()
 	return true
 
+func _creep_type_for_wave(w: int) -> int:
+	return int(TYPE_BY_WAVE.get(w, mini(5, maxi(0, w - 1))))
+
 func _spawn_wave() -> void:
 	_spawning = true
 	var paths: Array = []
@@ -38,14 +62,18 @@ func _spawn_wave() -> void:
 	if paths.is_empty():
 		_spawning = false
 		return
+	var ctype := _creep_type_for_wave(wave_index)
+	var ts: Dictionary = TYPE_STATS.get(ctype, TYPE_STATS[0])
+	var base_hp := 20 + wave_index * hp_per_wave
+	var base_rew := 6 + wave_index * 2
+	var base_spd := 80.0 + wave_index * 4.0
 	for i in creeps_per_corner:
 		for pts in paths:
 			await get_tree().create_timer(spawn_interval).timeout
 			var creep = creep_scene.instantiate()
-			creep.max_hp = 20 + wave_index * hp_per_wave
-			creep.reward = 6 + wave_index * 2
-			creep.speed = 80.0 + wave_index * 4.0
-			var ctype := (wave_index + i) % 6
+			creep.max_hp = maxi(1, int(round(base_hp * float(ts["hp"]))))
+			creep.reward = maxi(1, int(round(base_rew * float(ts["rew"]))))
+			creep.speed = base_spd * float(ts["spd"])
 			add_child(creep)
 			creep.setup(pts, ctype)
 			creep.leaked.connect(_on_leaked)
