@@ -1,5 +1,4 @@
 extends CharacterBody2D
-## Placeholder creep — follows CreepPath, leaks damage lives at end.
 class_name Creep
 
 signal leaked
@@ -9,17 +8,15 @@ signal died(reward: int)
 @export var max_hp: int = 30
 @export var reward: int = 12
 
-var hp: int
+var hp: int = 30
 var _points: PackedVector2Array = []
 var _idx: int = 0
 var _resolved: bool = false
 
 @onready var _hp_label: Label = $HpLabel
 
-
 func _ready() -> void:
 	add_to_group("creeps")
-
 
 func setup(points: PackedVector2Array) -> void:
 	_points = points
@@ -30,7 +27,6 @@ func setup(points: PackedVector2Array) -> void:
 		_idx = 1
 	_update_hp()
 
-
 func take_damage(amount: int) -> void:
 	if _resolved:
 		return
@@ -38,7 +34,6 @@ func take_damage(amount: int) -> void:
 	_update_hp()
 	if hp <= 0:
 		_resolve_death()
-
 
 func _resolve_death() -> void:
 	if _resolved:
@@ -48,7 +43,6 @@ func _resolve_death() -> void:
 	died.emit(reward)
 	queue_free()
 
-
 func _resolve_leak() -> void:
 	if _resolved:
 		return
@@ -57,21 +51,19 @@ func _resolve_leak() -> void:
 	leaked.emit()
 	queue_free()
 
-
 func _physics_process(_delta: float) -> void:
 	if _resolved:
 		return
 	if _points.is_empty() or _idx >= _points.size():
 		_resolve_leak()
 		return
-	var target := _points[_idx]
-	var dir := (target - global_position)
+	var target: Vector2 = _points[_idx]
+	var dir: Vector2 = target - global_position
 	if dir.length() < 4.0:
 		_idx += 1
 		return
 	velocity = dir.normalized() * speed
 	move_and_slide()
-
 
 func _update_hp() -> void:
 	if _hp_label:

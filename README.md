@@ -1,6 +1,8 @@
 # Green TD
 
-Warcraft 3 **Green TD** remake — single-player first; Steam / online later.
+Warcraft 3 **Green Circle TD** remake — single-player first; Steam later.
+
+![Gameplay](docs/gameplay.png)
 
 ## Engine
 
@@ -10,24 +12,17 @@ Warcraft 3 **Green TD** remake — single-player first; Steam / online later.
 ## Open & run
 
 1. Install [Godot 4](https://godotengine.org/download)
-2. Open this folder as a project (`project.godot`)
+2. Open this folder (`project.godot`)
 3. Press **F5**
 
-### Controls (Milestone 2 slice)
+### Controls
 
-- **Space** — start next wave
-- **Left click** — place archer tower ($50)
-- Survive 5 waves / clear all = win; lives 0 = lose
+- **Space** — next wave (spawns from all 4 corners)
+- **Left click** — place selected tower / select tower
+- **U** — upgrade selected tower
+- Build tray — archer / cannon / frost / lightning / support
+- Leak at **center** costs a life
 
-## Layout
+## Reference
 
-| Path | Purpose |
-|------|---------|
-| `scenes/main.tscn` | Map path + spawner + towers + HUD |
-| `scenes/ui/hud.tscn` | HUD shell |
-| `scenes/creep/creep.tscn` | Placeholder creep |
-| `scripts/wave/wave_spawner.gd` | Waves |
-| `scripts/tower/tower.gd` | Basic tower |
-| `scripts/path/creep_path.gd` | Waypoints |
-
-Steam multiplayer out of scope for now.
+Gameplay aligned to [Green Circle TD 2026](https://www.youtube.com/watch?v=Q9dLiQrCaFU). UI is modern glass (not WC3 wood frames).
