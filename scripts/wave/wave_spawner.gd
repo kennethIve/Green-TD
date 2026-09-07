@@ -9,6 +9,7 @@ signal creep_killed(reward: int)
 
 @export var creep_scene: PackedScene
 @export var path_paths: Array[NodePath] = []
+## Fallback if a wave is missing from WAVE_DENSITY (kept for editor/compat).
 @export var creeps_per_corner: int = 4
 @export var spawn_interval: float = 0.40
 @export var total_waves: int = 8
@@ -35,6 +36,19 @@ const TYPE_STATS := {
 	5: {"hp": 2.40, "spd": 0.90, "rew": 2.80},  # boss 魔眼
 }
 
+# Late-wave readability: keep W1–4 punchy; thin W5+ and space W6–8.
+# creeps = per corner (×4 paths); interval = seconds between corner ticks.
+const WAVE_DENSITY := {
+	1: {"creeps": 4, "interval": 0.40},
+	2: {"creeps": 4, "interval": 0.40},
+	3: {"creeps": 4, "interval": 0.40},
+	4: {"creeps": 4, "interval": 0.40},
+	5: {"creeps": 3, "interval": 0.42},
+	6: {"creeps": 3, "interval": 0.45},
+	7: {"creeps": 2, "interval": 0.45},
+	8: {"creeps": 2, "interval": 0.45},
+}
+
 var wave_index: int = 0
 var _alive: int = 0
 var _spawning: bool = false
@@ -52,6 +66,11 @@ func start_next_wave() -> bool:
 func _creep_type_for_wave(w: int) -> int:
 	return int(TYPE_BY_WAVE.get(w, mini(5, maxi(0, w - 1))))
 
+func _density_for_wave(w: int) -> Dictionary:
+	if WAVE_DENSITY.has(w):
+		return WAVE_DENSITY[w]
+	return {"creeps": creeps_per_corner, "interval": spawn_interval}
+
 func _spawn_wave() -> void:
 	_spawning = true
 	var paths: Array = []
@@ -64,13 +83,16 @@ func _spawn_wave() -> void:
 		return
 	var ctype := _creep_type_for_wave(wave_index)
 	var ts: Dictionary = TYPE_STATS.get(ctype, TYPE_STATS[0])
+	var dens: Dictionary = _density_for_wave(wave_index)
+	var count: int = int(dens.get("creeps", creeps_per_corner))
+	var interval: float = float(dens.get("interval", spawn_interval))
 	var base_hp := 20 + wave_index * hp_per_wave
 	# WC3 GiveJB=8 + LVL/3; solo 8-wave uses +1.5/wave for readable scaling
 	var base_rew := 8 + int((wave_index - 1) * 1.5)
 	# WC3 SpawnWaves1 period=0.40; all corners fire together each tick.
 	# Solo 8-wave: slower early, modest late ramp (avoid teleport-fast W7–8).
 	var base_spd := 72.0 + wave_index * 3.5
-	for i in creeps_per_corner:
+	for i in count:
 		for pts in paths:
 			var creep = creep_scene.instantiate()
 			creep.max_hp = maxi(1, int(round(base_hp * float(ts["hp"]))))
@@ -81,8 +103,8 @@ func _spawn_wave() -> void:
 			creep.leaked.connect(_on_leaked)
 			creep.died.connect(_on_died)
 			_alive += 1
-		if i + 1 < creeps_per_corner:
-			await get_tree().create_timer(spawn_interval).timeout
+		if i + 1 < count:
+			await get_tree().create_timer(interval).timeout
 	_spawning = false
 	_check_clear()
 
