@@ -9,7 +9,79 @@ const PATH_HALF_WIDTH := 26.0
 const TOWER_MIN_SEP := 44.0
 const TOWER_PICK_RADIUS := 32.0
 const CENTER_BLOCK_RADIUS := 55.0
+const GHOST_OK := Color("#3DDC84")
+const GHOST_BAD := Color(0.92, 0.22, 0.22)
 const TowerScript = preload("res://scripts/tower/tower.gd")
+
+## Follow-cursor placement preview (tier-1 art + legal/illegal tint).
+class PlacementGhost extends Node2D:
+	var legal: bool = true
+	var flash_t: float = 0.0
+	var shake_t: float = 0.0
+	var _sprite: Sprite2D
+
+	func _ensure_sprite() -> void:
+		if _sprite != null and is_instance_valid(_sprite):
+			return
+		_sprite = Sprite2D.new()
+		_sprite.name = "Sprite"
+		_sprite.centered = true
+		_sprite.position = Vector2(0, -4)
+		add_child(_sprite)
+
+	func _ready() -> void:
+		z_index = 20
+		_ensure_sprite()
+		visible = false
+
+	func set_art(tower_id: String) -> void:
+		_ensure_sprite()
+		var art_path := "res://assets/towers/%s_lv1.png" % tower_id
+		if ResourceLoader.exists(art_path):
+			_sprite.texture = load(art_path)
+			_sprite.visible = true
+		else:
+			_sprite.texture = null
+			_sprite.visible = false
+		queue_redraw()
+
+	func set_legal(ok: bool) -> void:
+		if legal == ok:
+			return
+		legal = ok
+		if not ok:
+			shake_t = 0.18
+		queue_redraw()
+
+	func flash_illegal() -> void:
+		legal = false
+		flash_t = 0.28
+		shake_t = 0.22
+		queue_redraw()
+
+	func tick(delta: float, world_pos: Vector2) -> void:
+		flash_t = maxf(flash_t - delta, 0.0)
+		shake_t = maxf(shake_t - delta, 0.0)
+		var shake := Vector2.ZERO
+		if shake_t > 0.0:
+			shake = Vector2(randf_range(-3.0, 3.0), randf_range(-3.0, 3.0))
+		global_position = world_pos + shake
+		var tint := GHOST_OK if legal else GHOST_BAD
+		var a := 0.55 if flash_t <= 0.0 else 0.95
+		if _sprite:
+			_sprite.modulate = Color(tint.r, tint.g, tint.b, a * 0.85 if legal else a)
+		queue_redraw()
+
+	func _draw() -> void:
+		var col := GHOST_OK if legal else GHOST_BAD
+		if flash_t > 0.0:
+			col = GHOST_BAD
+		var border_a := 0.95 if flash_t > 0.0 else 0.85
+		var fill := Color(col.r, col.g, col.b, 0.40)
+		draw_circle(Vector2.ZERO, 26.0, fill)
+		draw_arc(Vector2.ZERO, 28.0, 0.0, TAU, 48, Color(col.r, col.g, col.b, border_a), 2.5, true)
+		if _sprite == null or _sprite.texture == null:
+			draw_circle(Vector2.ZERO, 14.0, Color(col.r, col.g, col.b, 0.7))
 
 @onready var hud: Control = $UI/HUD
 @onready var spawner = $WaveSpawner
@@ -26,6 +98,8 @@ var _wave_time_left: float = 0.0
 var _wave_duration: float = 24.0
 var _wave_end_msec: int = 0
 var _focus_open: bool = false
+var _building: bool = true
+var _ghost: PlacementGhost
 
 func _ready() -> void:
 	spawner.creep_leaked.connect(_on_leak)
@@ -49,6 +123,11 @@ func _ready() -> void:
 	if hud.has_method("show_tower"):
 		hud.show_tower(null)
 	_focus_open = false
+	_building = true
+	_ghost = PlacementGhost.new()
+	_ghost.name = "PlacementGhost"
+	add_child(_ghost)
+	_ghost.set_art(_build_id)
 	_refresh_hud()
 	status_label.text = "Click tower = select | U = upgrade menu | Upgrade btn = upgrade"
 	# Legal empty ground (off w3x path ribbon); prior (420/860,260) sat on vertical path arms.
@@ -58,7 +137,8 @@ func _ready() -> void:
 	await get_tree().create_timer(1.2).timeout
 	_start_wave()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_update_placement_ghost(delta)
 	if _ended or _wave_end_msec <= 0:
 		return
 	_wave_time_left = maxf(float(_wave_end_msec - Time.get_ticks_msec()) / 1000.0, 0.0)
@@ -94,7 +174,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_tower(hit)
 			return
 		_deselect_tower()
-		_place_tower(pos, _build_id)
+		_place_tower(pos, _build_id, true)
 
 func _on_pause() -> void:
 	get_tree().paused = not get_tree().paused
@@ -211,25 +291,35 @@ func _over_ui(pos: Vector2) -> bool:
 		return true
 	return false
 
-func _place_tower(pos: Vector2, id: String) -> void:
+## Shared placement gate used by ghost + click. Returns {ok, reason}.
+func _can_place(pos: Vector2, id: String = "") -> Dictionary:
+	if id == "":
+		id = _build_id
 	var defs: Dictionary = TowerScript.DEFS.get(id, TowerScript.DEFS["archer"])
 	var cost: int = int(defs["cost"])
 	if gold < cost:
-		status_label.text = "Not enough gold"
-		return
+		return {"ok": false, "reason": "Not enough gold"}
 	if _over_ui(pos):
-		status_label.text = "Cannot build on UI"
-		return
+		return {"ok": false, "reason": "Cannot build on UI"}
 	if pos.distance_to(Vector2(640, 360)) < CENTER_BLOCK_RADIUS:
-		status_label.text = "Cannot build on center"
-		return
+		return {"ok": false, "reason": "Cannot build on center"}
 	if _on_path(pos):
-		status_label.text = "Cannot build on path"
-		return
+		return {"ok": false, "reason": "Cannot build on path"}
 	for t in towers.get_children():
 		if t.global_position.distance_to(pos) < TOWER_MIN_SEP:
-			status_label.text = "Too close to another tower"
-			return
+			return {"ok": false, "reason": "Too close to another tower"}
+	return {"ok": true, "reason": ""}
+
+func _place_tower(pos: Vector2, id: String, from_player: bool = false) -> bool:
+	var check: Dictionary = _can_place(pos, id)
+	if not bool(check["ok"]):
+		if from_player:
+			if _ghost:
+				_ghost.flash_illegal()
+			status_label.text = str(check["reason"])
+		return false
+	var defs: Dictionary = TowerScript.DEFS.get(id, TowerScript.DEFS["archer"])
+	var cost: int = int(defs["cost"])
 	gold -= cost
 	var tower = TowerScript.new()
 	tower.apply_id(id)
@@ -238,14 +328,21 @@ func _place_tower(pos: Vector2, id: String) -> void:
 	_select_tower(tower)
 	_refresh_hud()
 	status_label.text = "Built %s ($%d)" % [id, cost]
+	return true
 
 func _on_build_pressed(id: String) -> void:
 	_sell_mode = false
+	_building = true
 	_build_id = id
+	if _ghost:
+		_ghost.set_art(id)
 	status_label.text = "Build: %s" % id
 
 func _on_sell_mode() -> void:
 	_sell_mode = true
+	_building = false
+	if _ghost:
+		_ghost.visible = false
 	status_label.text = "Sell mode ON - click a tower to sell"
 
 func _sell_tower(t: Node2D) -> void:
@@ -291,6 +388,22 @@ func _on_win() -> void:
 func _lose() -> void:
 	_ended = true
 	status_label.text = "DEFEAT"
+
+func _update_placement_ghost(delta: float) -> void:
+	if _ghost == null:
+		return
+	# Primary feedback is the ghost; hide in sell / not building / ended / over UI.
+	if _ended or _sell_mode or not _building:
+		_ghost.visible = false
+		return
+	var pos := get_global_mouse_position()
+	if _over_ui(pos):
+		_ghost.visible = false
+		return
+	_ghost.visible = true
+	var check: Dictionary = _can_place(pos, _build_id)
+	_ghost.set_legal(bool(check["ok"]))
+	_ghost.tick(delta, pos)
 
 func _refresh_hud() -> void:
 	if hud.has_method("set_resources"):
