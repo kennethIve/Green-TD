@@ -12,84 +12,90 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_hud")
 
-[node name="TopBarPanel" type="PanelContainer" parent="."]
-unique_name_in_owner = true
+[node name="TopRow" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
 offset_top = 12.0
 offset_right = -16.0
-offset_bottom = 72.0
+offset_bottom = 76.0
 grow_horizontal = 2
+theme_override_constants/separation = 12
 
-[node name="TopBar" type="HBoxContainer" parent="TopBarPanel"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="Resources" type="HBoxContainer" parent="TopBarPanel/TopBar"]
+[node name="ResourcesPill" type="PanelContainer" parent="TopRow"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 20
 
-[node name="LivesLabel" type="Label" parent="TopBarPanel/TopBar/Resources"]
+[node name="Resources" type="HBoxContainer" parent="TopRow/ResourcesPill"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="LivesLabel" type="Label" parent="TopRow/ResourcesPill/Resources"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.24, 0.86, 0.52, 1)
 theme_override_font_sizes/font_size = 18
-text = "♥ 25"
+text = "♥ 40 / 40"
 
-[node name="GoldLabel" type="Label" parent="TopBarPanel/TopBar/Resources"]
+[node name="GoldLabel" type="Label" parent="TopRow/ResourcesPill/Resources"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
 theme_override_font_sizes/font_size = 18
-text = "🪙 680"
+text = "🪙 200"
 
-[node name="WavePill" type="VBoxContainer" parent="TopBarPanel/TopBar"]
+[node name="WavePillPanel" type="PanelContainer" parent="TopRow"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="WaveRow" type="HBoxContainer" parent="TopBarPanel/TopBar/WavePill"]
+[node name="WavePill" type="VBoxContainer" parent="TopRow/WavePillPanel"]
 layout_mode = 2
 
-[node name="WaveLabel" type="Label" parent="TopBarPanel/TopBar/WavePill/WaveRow"]
+[node name="WaveRow" type="HBoxContainer" parent="TopRow/WavePillPanel/WavePill"]
+layout_mode = 2
+
+[node name="WaveLabel" type="Label" parent="TopRow/WavePillPanel/WavePill/WaveRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = "Wave 7 / 30"
+text = "Wave 0 / 8"
 
-[node name="TimerLabel" type="Label" parent="TopBarPanel/TopBar/WavePill/WaveRow"]
+[node name="TimerLabel" type="Label" parent="TopRow/WavePillPanel/WavePill/WaveRow"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.24, 0.86, 0.52, 1)
 theme_override_font_sizes/font_size = 16
-text = "18s"
+text = "00:00"
 
-[node name="WaveBar" type="ProgressBar" parent="TopBarPanel/TopBar/WavePill"]
+[node name="WaveBar" type="ProgressBar" parent="TopRow/WavePillPanel/WavePill"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
-max_value = 30.0
-value = 18.0
 show_percentage = false
 
-[node name="SysButtons" type="HBoxContainer" parent="TopBarPanel/TopBar"]
+[node name="SysPill" type="PanelContainer" parent="TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SysButtons" type="HBoxContainer" parent="TopRow/SysPill"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SettingsBtn" type="Button" parent="TopBarPanel/TopBar/SysButtons"]
+[node name="SettingsBtn" type="Button" parent="TopRow/SysPill/SysButtons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(88, 36)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-text = "Settings"
+text = "⚙"
 
-[node name="PauseBtn" type="Button" parent="TopBarPanel/TopBar/SysButtons"]
+[node name="PauseBtn" type="Button" parent="TopRow/SysPill/SysButtons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 36)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-text = "Pause"
+text = "⏸"
 
 [node name="Minimap" type="PanelContainer" parent="."]
 unique_name_in_owner = true
@@ -117,33 +123,41 @@ anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -110.0
+offset_left = -280.0
+offset_top = -130.0
 offset_right = -16.0
-offset_bottom = 110.0
-grow_horizontal = 0
-grow_vertical = 2
+offset_bottom = 130.0
 
 [node name="FocusVBox" type="VBoxContainer" parent="FocusCard"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="FocusName" type="Label" parent="FocusCard/FocusVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.24, 0.86, 0.52, 1)
 theme_override_font_sizes/font_size = 20
-text = "Eldarin Archer"
+text = "Archer Lv1"
 
 [node name="FocusDps" type="Label" parent="FocusCard/FocusVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "DPS  42"
+text = "DPS  8   (+3)"
 
 [node name="FocusRange" type="Label" parent="FocusCard/FocusVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Range  320"
+text = "Range  200   (+16)"
+
+[node name="FocusUpgradeCost" type="Label" parent="FocusCard/FocusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Upgrade  $70"
+
+[node name="FocusSellRefund" type="Label" parent="FocusCard/FocusVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Refund  $25"
 
 [node name="FocusActions" type="HBoxContainer" parent="FocusCard/FocusVBox"]
 layout_mode = 2
@@ -169,12 +183,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -320.0
+offset_left = -240.0
 offset_top = -96.0
-offset_right = 320.0
+offset_right = 240.0
 offset_bottom = -16.0
-grow_horizontal = 2
-grow_vertical = 0
 
 [node name="BuildTray" type="HBoxContainer" parent="BuildTrayPanel"]
 unique_name_in_owner = true
@@ -183,31 +195,31 @@ alignment = 1
 theme_override_constants/separation = 8
 
 [node name="TowerBtn_archer" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(88, 56)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "Archer"
+text = "🏹"
 
 [node name="TowerBtn_cannon" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(88, 56)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "Cannon"
+text = "💣"
 
 [node name="TowerBtn_frost" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(88, 56)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "Frost"
+text = "❄"
 
 [node name="TowerBtn_lightning" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(88, 56)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "Bolt"
+text = "⚡"
 
 [node name="TowerBtn_support" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(88, 56)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "Support"
+text = "✧"
 
 [node name="TowerBtn_sell" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(88, 56)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-text = "Sell"
+text = "💰"
