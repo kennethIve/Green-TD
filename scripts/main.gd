@@ -19,6 +19,7 @@ var _sell_mode: bool = false
 var _selected_tower: Node2D = null
 var _wave_time_left: float = 0.0
 var _wave_duration: float = 24.0
+var _wave_end_msec: int = 0
 
 func _ready() -> void:
 	spawner.creep_leaked.connect(_on_leak)
@@ -43,16 +44,17 @@ func _ready() -> void:
 	status_label.text = "4-corner circle | Wave btn / Space = wave | Click = build/select"
 	_place_tower(Vector2(420, 260), "archer")
 	_place_tower(Vector2(860, 260), "frost")
-	# Web-friendly: auto-start wave 1; Wave button / Space also work
 	await get_tree().create_timer(1.2).timeout
 	_start_wave()
 
-func _process(delta: float) -> void:
-	if _ended or _wave_time_left <= 0.0:
+func _process(_delta: float) -> void:
+	if _ended or _wave_end_msec <= 0:
 		return
-	_wave_time_left = maxf(_wave_time_left - delta, 0.0)
+	_wave_time_left = maxf(float(_wave_end_msec - Time.get_ticks_msec()) / 1000.0, 0.0)
 	if hud.has_method("set_wave"):
 		hud.set_wave(spawner.wave_index, spawner.total_waves, _wave_time_left, _wave_duration)
+	if _wave_time_left <= 0.0:
+		_wave_end_msec = 0
 
 func _start_wave() -> void:
 	if _ended:
@@ -84,7 +86,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_pause() -> void:
 	get_tree().paused = not get_tree().paused
-	# Keep HUD processable
 	if hud:
 		hud.process_mode = Node.PROCESS_MODE_ALWAYS
 	status_label.text = "Paused" if get_tree().paused else "Resumed"
@@ -187,6 +188,7 @@ func _on_kill(reward: int) -> void:
 func _on_wave_started(index: int, total: int) -> void:
 	_wave_duration = 24.0
 	_wave_time_left = _wave_duration
+	_wave_end_msec = Time.get_ticks_msec() + int(_wave_duration * 1000.0)
 	if hud.has_method("set_wave"):
 		hud.set_wave(index, total, _wave_time_left, _wave_duration)
 	status_label.text = "Wave %d / %d - 4 corners" % [index, total]
@@ -204,3 +206,4 @@ func _lose() -> void:
 func _refresh_hud() -> void:
 	if hud.has_method("set_resources"):
 		hud.set_resources(lives, gold, START_LIVES)
+

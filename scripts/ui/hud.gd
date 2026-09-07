@@ -42,8 +42,9 @@ func set_resources(lives: int, gold: int, lives_max: int = 40) -> void:
 func set_wave(n: int, total: int, secs: float, duration: float = -1.0) -> void:
 	wave_label.text = "Wave %d / %d" % [n, total]
 	var left := maxf(secs, 0.0)
-	var m := int(left) / 60
-	var s := int(left) % 60
+	var secs_i: int = int(floor(left))
+	var m: int = int(secs_i / 60.0)
+	var s: int = secs_i % 60
 	timer_label.text = "%02d:%02d" % [m, s]
 	if duration > 0.0:
 		wave_bar.max_value = duration
@@ -116,7 +117,7 @@ func _wire_buttons() -> void:
 func _on_build(id: String) -> void:
 	if id == "sell":
 		set_build_selected("sell")
-		sell_pressed.emit()  # enter sell mode; click tower to confirm
+		sell_pressed.emit()
 	else:
 		set_build_selected(id)
 		build_pressed.emit(id)
