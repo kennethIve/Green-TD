@@ -1,5 +1,5 @@
 extends Node2D
-## Game loop: lives, gold, waves, win/lose. Wires HUD.
+## Game loop aligned to Green Circle TD: leak at CENTER loses a life.
 
 const START_LIVES := 40
 const START_GOLD := 200
@@ -18,19 +18,15 @@ var _build_id: String = "archer"
 
 
 func _ready() -> void:
-	# Mark creeps via group when spawned — patch in spawner children
 	spawner.creep_leaked.connect(_on_leak)
 	spawner.creep_killed.connect(_on_kill)
 	spawner.wave_started.connect(_on_wave_started)
 	spawner.all_waves_cleared.connect(_on_win)
 	if hud.has_signal("build_pressed"):
 		hud.build_pressed.connect(_on_build_pressed)
-	if hud.has_signal("pause_pressed"):
-		hud.pause_pressed.connect(func() -> void: get_tree().paused = not get_tree().paused)
 	_refresh_hud()
-	status_label.text = "Click map to place archer ($%d) · Space = next wave" % TOWER_COST
-	# Auto-place one starter tower near path mid
-	_place_tower(Vector2(640, 280))
+	status_label.text = "Circle path → center leak. Space = wave · Click = tower ($%d)" % TOWER_COST
+	_place_tower(Vector2(500, 280))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -48,6 +44,10 @@ func _unhandled_input(event: InputEvent) -> void:
 func _place_tower(pos: Vector2) -> void:
 	if gold < TOWER_COST:
 		status_label.text = "Not enough gold"
+		return
+	# Soft block placing on the green center goal
+	if pos.distance_to(Vector2(640, 360)) < 50.0:
+		status_label.text = "Cannot build on center"
 		return
 	gold -= TOWER_COST
 	var t := Tower.new()
@@ -96,7 +96,6 @@ func _lose() -> void:
 
 func _refresh_hud() -> void:
 	if hud.has_method("set_resources"):
-		# HUD still shows current/max style when we pass lives; keep max in label via hack
 		hud.set_resources(lives, gold)
 		if hud.get_node_or_null("%LivesLabel"):
 			hud.get_node("%LivesLabel").text = "♥ %d / %d" % [lives, START_LIVES]

@@ -19,34 +19,93 @@ offset_bottom = 720.0
 mouse_filter = 2
 color = Color(0.12, 0.18, 0.14, 1)
 
+[node name="CenterGoal" type="ColorRect" parent="."]
+z_index = -5	offset_left = 600.0
+offset_top = 320.0
+offset_right = 680.0
+offset_bottom = 400.0
+mouse_filter = 2
+color = Color(0.24, 0.86, 0.52, 0.35)
+
 [node name="CreepPath" type="Node2D" parent="."]
 script = ExtResource("3_path")
 
 [node name="P1" type="Marker2D" parent="CreepPath"]
-position = Vector2(40, 360)
+position = Vector2(80, 80)
 
 [node name="P2" type="Marker2D" parent="CreepPath"]
-position = Vector2(320, 360)
+position = Vector2(640, 60)
 
 [node name="P3" type="Marker2D" parent="CreepPath"]
-position = Vector2(320, 160)
+position = Vector2(1200, 80)
 
 [node name="P4" type="Marker2D" parent="CreepPath"]
-position = Vector2(720, 160)
+position = Vector2(1220, 360)
 
 [node name="P5" type="Marker2D" parent="CreepPath"]
-position = Vector2(720, 520)
+position = Vector2(1200, 640)
 
 [node name="P6" type="Marker2D" parent="CreepPath"]
-position = Vector2(1120, 520)
+position = Vector2(640, 660)
 
 [node name="P7" type="Marker2D" parent="CreepPath"]
-position = Vector2(1240, 360)
+position = Vector2(80, 640)
+
+[node name="P8" type="Marker2D" parent="CreepPath"]
+position = Vector2(60, 360)
+
+[node name="P9" type="Marker2D" parent="CreepPath"]
+position = Vector2(200, 200)
+
+[node name="P10" type="Marker2D" parent="CreepPath"]
+position = Vector2(640, 140)
+
+[node name="P11" type="Marker2D" parent="CreepPath"]
+position = Vector2(1080, 200)
+
+[node name="P12" type="Marker2D" parent="CreepPath"]
+position = Vector2(1140, 360)
+
+[node name="P13" type="Marker2D" parent="CreepPath"]
+position = Vector2(1080, 520)
+
+[node name="P14" type="Marker2D" parent="CreepPath"]
+position = Vector2(640, 580)
+
+[node name="P15" type="Marker2D" parent="CreepPath"]
+position = Vector2(200, 520)
+
+[node name="P16" type="Marker2D" parent="CreepPath"]
+position = Vector2(140, 360)
+
+[node name="P17" type="Marker2D" parent="CreepPath"]
+position = Vector2(320, 280)
+
+[node name="P18" type="Marker2D" parent="CreepPath"]
+position = Vector2(640, 220)
+
+[node name="P19" type="Marker2D" parent="CreepPath"]
+position = Vector2(960, 280)
+
+[node name="P20" type="Marker2D" parent="CreepPath"]
+position = Vector2(960, 440)
+
+[node name="P21" type="Marker2D" parent="CreepPath"]
+position = Vector2(640, 500)
+
+[node name="P22" type="Marker2D" parent="CreepPath"]
+position = Vector2(320, 440)
+
+[node name="P23" type="Marker2D" parent="CreepPath"]
+position = Vector2(400, 360)
+
+[node name="P24" type="Marker2D" parent="CreepPath"]
+position = Vector2(640, 360)
 
 [node name="PathLine" type="Line2D" parent="CreepPath"]
 z_index = -1
-points = PackedVector2Array(40, 360, 320, 360, 320, 160, 720, 160, 720, 520, 1120, 520, 1240, 360)
-width = 36.0
+points = PackedVector2Array(80, 80, 640, 60, 1200, 80, 1220, 360, 1200, 640, 640, 660, 80, 640, 60, 360, 200, 200, 640, 140, 1080, 200, 1140, 360, 1080, 520, 640, 580, 200, 520, 140, 360, 320, 280, 640, 220, 960, 280, 960, 440, 640, 500, 320, 440, 400, 360, 640, 360)
+width = 28.0
 default_color = Color(0.2, 0.28, 0.22, 0.9)
 
 [node name="WaveSpawner" type="Node2D" parent="."]
@@ -64,7 +123,7 @@ offset_top = 680.0
 offset_right = 1080.0
 offset_bottom = 708.0
 theme_override_font_sizes/font_size = 14
-text = "Space = next wave · Click = place tower"
+text = "Green Circle — Space next wave · Click place tower · Leak at CENTER"
 horizontal_alignment = 1
 
 [node name="UI" type="CanvasLayer" parent="."]
