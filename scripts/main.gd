@@ -3,7 +3,12 @@ extends Node2D
 
 const START_LIVES := 40
 const START_GOLD := 220
-const PATH_HALF_WIDTH := 18.0
+## Line2D path width is 26 → half ~13; use ~26 so exclusion covers the visible ribbon + margin.
+const PATH_HALF_WIDTH := 26.0
+## Tower sprites ~64px; keep centers far enough that bases do not stack.
+const TOWER_MIN_SEP := 44.0
+const TOWER_PICK_RADIUS := 32.0
+const CENTER_BLOCK_RADIUS := 55.0
 const TowerScript = preload("res://scripts/tower/tower.gd")
 
 @onready var hud: Control = $UI/HUD
@@ -46,8 +51,9 @@ func _ready() -> void:
 	_focus_open = false
 	_refresh_hud()
 	status_label.text = "Click tower = select | U = upgrade menu | Upgrade btn = upgrade"
-	_place_tower(Vector2(420, 260), "archer")
-	_place_tower(Vector2(860, 260), "frost")
+	# Legal empty ground (off w3x path ribbon); prior (420/860,260) sat on vertical path arms.
+	_place_tower(Vector2(360, 280), "archer")
+	_place_tower(Vector2(920, 300), "frost")
 	# Web-friendly: auto-start wave 1; Wave button / Space also work
 	await get_tree().create_timer(1.2).timeout
 	_start_wave()
@@ -98,7 +104,7 @@ func _on_pause() -> void:
 
 func _tower_at(pos: Vector2) -> Node2D:
 	for t in towers.get_children():
-		if t.global_position.distance_to(pos) <= 28.0:
+		if t.global_position.distance_to(pos) <= TOWER_PICK_RADIUS:
 			return t
 	return null
 
@@ -169,15 +175,40 @@ func _do_upgrade() -> void:
 		_refresh_hud()
 		status_label.text = "Upgraded to Lv%d" % int(_selected_tower.level)
 
+func _path_points(path: Node) -> PackedVector2Array:
+	# Prefer CreepPath.get_points() (Marker2D waypoints = Line2D). Fallback to child Line2D.
+	if path != null and path.has_method("get_points"):
+		var pts: PackedVector2Array = path.get_points()
+		if pts.size() >= 2:
+			return pts
+	var line := path.get_node_or_null("Line") if path != null else null
+	if line is Line2D:
+		var local_pts: PackedVector2Array = (line as Line2D).points
+		var out: PackedVector2Array = []
+		for p in local_pts:
+			out.append((line as Line2D).to_global(p))
+		return out
+	return PackedVector2Array()
+
 func _on_path(pos: Vector2) -> bool:
 	for path_name in ["PathTL", "PathTR", "PathBR", "PathBL"]:
 		var path := get_node_or_null(path_name)
-		if path == null:
-			continue
-		var pts: PackedVector2Array = path.get_points()
+		var pts := _path_points(path)
 		for i in range(pts.size() - 1):
 			if Geometry2D.get_closest_point_to_segment(pos, pts[i], pts[i + 1]).distance_to(pos) <= PATH_HALF_WIDTH:
 				return true
+	return false
+
+func _over_ui(pos: Vector2) -> bool:
+	# Block leaked clicks on HUD chrome (tray / top bar / minimap / open focus card).
+	if pos.y < 84.0:
+		return true
+	if pos.y > 620.0 and pos.x > 320.0 and pos.x < 960.0:
+		return true
+	if pos.x < 184.0 and pos.y > 280.0 and pos.y < 440.0:
+		return true
+	if _focus_open and pos.x > 1000.0 and pos.y > 230.0 and pos.y < 490.0:
+		return true
 	return false
 
 func _place_tower(pos: Vector2, id: String) -> void:
@@ -186,14 +217,17 @@ func _place_tower(pos: Vector2, id: String) -> void:
 	if gold < cost:
 		status_label.text = "Not enough gold"
 		return
-	if pos.distance_to(Vector2(640, 360)) < 55.0:
+	if _over_ui(pos):
+		status_label.text = "Cannot build on UI"
+		return
+	if pos.distance_to(Vector2(640, 360)) < CENTER_BLOCK_RADIUS:
 		status_label.text = "Cannot build on center"
 		return
 	if _on_path(pos):
 		status_label.text = "Cannot build on path"
 		return
 	for t in towers.get_children():
-		if t.global_position.distance_to(pos) < 36.0:
+		if t.global_position.distance_to(pos) < TOWER_MIN_SEP:
 			status_label.text = "Too close to another tower"
 			return
 	gold -= cost
