@@ -1,0 +1,9 @@
+# Godot 4
+.godot/
+*.translation
+export.cfg
+export_presets.cfg
+*.tmp
+.mono/
+data_*/
+*.import
