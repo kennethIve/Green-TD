@@ -12,6 +12,7 @@ signal died(reward: int)
 var hp: int
 var _points: PackedVector2Array = []
 var _idx: int = 0
+var _resolved: bool = false
 
 @onready var _hp_label: Label = $HpLabel
 
@@ -23,6 +24,7 @@ func _ready() -> void:
 func setup(points: PackedVector2Array) -> void:
 	_points = points
 	hp = max_hp
+	_resolved = false
 	if _points.size() > 0:
 		global_position = _points[0]
 		_idx = 1
@@ -30,17 +32,37 @@ func setup(points: PackedVector2Array) -> void:
 
 
 func take_damage(amount: int) -> void:
+	if _resolved:
+		return
 	hp -= amount
 	_update_hp()
 	if hp <= 0:
-		died.emit(reward)
-		queue_free()
+		_resolve_death()
+
+
+func _resolve_death() -> void:
+	if _resolved:
+		return
+	_resolved = true
+	set_physics_process(false)
+	died.emit(reward)
+	queue_free()
+
+
+func _resolve_leak() -> void:
+	if _resolved:
+		return
+	_resolved = true
+	set_physics_process(false)
+	leaked.emit()
+	queue_free()
 
 
 func _physics_process(_delta: float) -> void:
+	if _resolved:
+		return
 	if _points.is_empty() or _idx >= _points.size():
-		leaked.emit()
-		queue_free()
+		_resolve_leak()
 		return
 	var target := _points[_idx]
 	var dir := (target - global_position)

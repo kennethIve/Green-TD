@@ -22,30 +22,31 @@ const PANEL_BG := Color(0.08, 0.1, 0.09, 0.85)
 @onready var build_tray: HBoxContainer = %BuildTray
 
 var _build_buttons: Dictionary = {}
+var _demo_seeded: bool = false
 
 
 func _ready() -> void:
 	_style_panels()
 	_wire_buttons()
-	# F5 demo data (UI/UX acceptance)
-	set_resources(25, 680)
-	set_wave(7, 30, 18.0)
-	set_build_selected("archer")
-	show_tower({
-		"name": "Eldarin Archer",
-		"dps": 42,
-		"range": 320,
-	})
+	# Demo seed only if game never pushed real resources this frame
+	await get_tree().process_frame
+	if not _demo_seeded:
+		# Leave blank-ish defaults; main.gd owns live values
+		pass
 
 
 func set_resources(lives: int, gold: int) -> void:
+	_demo_seeded = true
 	lives_label.text = "♥ %d" % lives
 	gold_label.text = "🪙 %d" % gold
 
 
 func set_wave(n: int, total: int, secs: float) -> void:
+	_demo_seeded = true
 	wave_label.text = "Wave %d / %d" % [n, total]
-	timer_label.text = "%ds" % int(secs)
+	var m := int(secs) / 60
+	var s := int(secs) % 60
+	timer_label.text = "%02d:%02d" % [m, s]
 	wave_bar.max_value = 30.0
 	wave_bar.value = clampf(secs, 0.0, 30.0)
 
@@ -76,21 +77,13 @@ func _wire_buttons() -> void:
 	%UpgradeBtn.pressed.connect(func() -> void: upgrade_pressed.emit())
 	%SellBtn.pressed.connect(func() -> void: sell_pressed.emit())
 	var ids := ["archer", "cannon", "frost", "lightning", "support", "sell"]
-	for child in build_tray.get_children():
-		if child is Button:
-			var btn := child as Button
-			var bid := str(btn.get_meta("tower_id", btn.name.to_lower()))
-			_build_buttons[bid] = btn
-			btn.pressed.connect(_on_build.bind(bid))
-	# Ensure meta ids even if scene used names
 	for i in ids.size():
 		var node_name := "TowerBtn_%s" % ids[i]
 		if build_tray.has_node(node_name):
 			var b: Button = build_tray.get_node(node_name)
 			b.set_meta("tower_id", ids[i])
 			_build_buttons[ids[i]] = b
-			if not b.pressed.is_connected(_on_build.bind(ids[i])):
-				b.pressed.connect(_on_build.bind(ids[i]))
+			b.pressed.connect(_on_build.bind(ids[i]))
 
 
 func _on_build(id: String) -> void:
