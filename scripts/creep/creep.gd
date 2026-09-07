@@ -12,6 +12,8 @@ var hp: int = 30
 var _points: PackedVector2Array = []
 var _idx: int = 0
 var _resolved: bool = false
+var _slow_mult: float = 1.0
+var _slow_timer: float = 0.0
 
 @onready var _hp_label: Label = $HpLabel
 
@@ -22,10 +24,16 @@ func setup(points: PackedVector2Array) -> void:
 	_points = points
 	hp = max_hp
 	_resolved = false
+	_slow_mult = 1.0
+	_slow_timer = 0.0
 	if _points.size() > 0:
 		global_position = _points[0]
 		_idx = 1
 	_update_hp()
+
+func apply_slow(mult: float, duration: float) -> void:
+	_slow_mult = minf(_slow_mult, mult)
+	_slow_timer = maxf(_slow_timer, duration)
 
 func take_damage(amount: int) -> void:
 	if _resolved:
@@ -51,9 +59,13 @@ func _resolve_leak() -> void:
 	leaked.emit()
 	queue_free()
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if _resolved:
 		return
+	if _slow_timer > 0.0:
+		_slow_timer -= delta
+		if _slow_timer <= 0.0:
+			_slow_mult = 1.0
 	if _points.is_empty() or _idx >= _points.size():
 		_resolve_leak()
 		return
@@ -62,7 +74,7 @@ func _physics_process(_delta: float) -> void:
 	if dir.length() < 4.0:
 		_idx += 1
 		return
-	velocity = dir.normalized() * speed
+	velocity = dir.normalized() * speed * _slow_mult
 	move_and_slide()
 
 func _update_hp() -> void:
