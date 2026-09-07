@@ -1,5 +1,5 @@
 extends Control
-## Green TD HUD — dark glass + #3DDC84 accent (UI/UX handoff stubs).
+## Dark-glass HUD — 3 top pills, build glow, focus costs.
 
 signal build_pressed(id: String)
 signal upgrade_pressed
@@ -9,6 +9,7 @@ signal settings_pressed
 
 const ACCENT := Color("3DDC84")
 const PANEL_BG := Color(0.08, 0.1, 0.09, 0.85)
+const SELL_RED := Color(0.9, 0.3, 0.3)
 
 @onready var lives_label: Label = %LivesLabel
 @onready var gold_label: Label = %GoldLabel
@@ -19,37 +20,31 @@ const PANEL_BG := Color(0.08, 0.1, 0.09, 0.85)
 @onready var focus_name: Label = %FocusName
 @onready var focus_dps: Label = %FocusDps
 @onready var focus_range: Label = %FocusRange
+@onready var focus_upgrade_cost: Label = %FocusUpgradeCost
+@onready var focus_sell_refund: Label = %FocusSellRefund
+@onready var upgrade_btn: Button = %UpgradeBtn
+@onready var sell_btn: Button = %SellBtn
 @onready var build_tray: HBoxContainer = %BuildTray
 
 var _build_buttons: Dictionary = {}
-var _demo_seeded: bool = false
-
+var _selected_build: String = ""
 
 func _ready() -> void:
 	_style_panels()
 	_wire_buttons()
-	# Demo seed only if game never pushed real resources this frame
-	await get_tree().process_frame
-	if not _demo_seeded:
-		# Leave blank-ish defaults; main.gd owns live values
-		pass
+	show_tower(null)
 
-
-func set_resources(lives: int, gold: int) -> void:
-	_demo_seeded = true
-	lives_label.text = "♥ %d" % lives
+func set_resources(lives: int, gold: int, lives_max: int = 40) -> void:
+	lives_label.text = "♥ %d / %d" % [lives, lives_max]
 	gold_label.text = "🪙 %d" % gold
 
-
 func set_wave(n: int, total: int, secs: float) -> void:
-	_demo_seeded = true
 	wave_label.text = "Wave %d / %d" % [n, total]
 	var m := int(secs) / 60
 	var s := int(secs) % 60
 	timer_label.text = "%02d:%02d" % [m, s]
-	wave_bar.max_value = 30.0
-	wave_bar.value = clampf(secs, 0.0, 30.0)
-
+	wave_bar.max_value = maxf(secs, 1.0)
+	wave_bar.value = clampf(secs, 0.0, wave_bar.max_value)
 
 func show_tower(data) -> void:
 	if data == null:
@@ -57,45 +52,70 @@ func show_tower(data) -> void:
 		return
 	focus_card.visible = true
 	focus_name.text = str(data.get("name", "Tower"))
-	focus_dps.text = "DPS  %s" % str(data.get("dps", "—"))
-	focus_range.text = "Range  %s" % str(data.get("range", "—"))
-
+	focus_dps.text = "DPS  %s   (+%s)" % [str(data.get("dps", "—")), str(data.get("dps_delta", 0))]
+	focus_range.text = "Range  %s   (+%s)" % [str(data.get("range", "—")), str(data.get("range_delta", 0))]
+	focus_upgrade_cost.text = "Upgrade  $%s" % str(data.get("upgrade_cost", "—"))
+	focus_sell_refund.text = "Refund  $%s" % str(data.get("sell_refund", "—"))
 
 func set_build_selected(id: String) -> void:
+	_selected_build = id
 	for btn_id in _build_buttons:
 		var btn: Button = _build_buttons[btn_id]
-		btn.button_pressed = (btn_id == id)
-		if btn_id == id:
-			btn.add_theme_color_override("font_color", ACCENT)
-		else:
-			btn.remove_theme_color_override("font_color")
+		var on := btn_id == id
+		btn.button_pressed = on
+		_set_btn_glow(btn, on)
 
+func _set_btn_glow(btn: Button, on: bool) -> void:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.12, 0.16, 0.14, 0.95)
+	sb.set_corner_radius_all(10)
+	sb.content_margin_left = 6
+	sb.content_margin_right = 6
+	sb.content_margin_top = 6
+	sb.content_margin_bottom = 6
+	if on:
+		sb.border_width_left = 3
+		sb.border_width_right = 3
+		sb.border_width_top = 3
+		sb.border_width_bottom = 3
+		sb.border_color = ACCENT
+		sb.shadow_color = Color(ACCENT.r, ACCENT.g, ACCENT.b, 0.55)
+		sb.shadow_size = 8
+	btn.add_theme_stylebox_override("normal", sb)
+	btn.add_theme_stylebox_override("pressed", sb)
+	btn.add_theme_stylebox_override("hover", sb)
+	if on:
+		btn.add_theme_color_override("font_color", ACCENT)
+	else:
+		btn.remove_theme_color_override("font_color")
 
 func _wire_buttons() -> void:
 	%SettingsBtn.pressed.connect(func() -> void: settings_pressed.emit())
 	%PauseBtn.pressed.connect(func() -> void: pause_pressed.emit())
-	%UpgradeBtn.pressed.connect(func() -> void: upgrade_pressed.emit())
-	%SellBtn.pressed.connect(func() -> void: sell_pressed.emit())
+	upgrade_btn.pressed.connect(func() -> void: upgrade_pressed.emit())
+	sell_btn.pressed.connect(func() -> void: sell_pressed.emit())
+	upgrade_btn.add_theme_color_override("font_color", ACCENT)
+	sell_btn.add_theme_color_override("font_color", SELL_RED)
 	var ids := ["archer", "cannon", "frost", "lightning", "support", "sell"]
-	for i in ids.size():
-		var node_name := "TowerBtn_%s" % ids[i]
+	for id in ids:
+		var node_name := "TowerBtn_%s" % id
 		if build_tray.has_node(node_name):
 			var b: Button = build_tray.get_node(node_name)
-			b.set_meta("tower_id", ids[i])
-			_build_buttons[ids[i]] = b
-			b.pressed.connect(_on_build.bind(ids[i]))
-
+			_build_buttons[id] = b
+			b.custom_minimum_size = Vector2(64, 64)
+			b.pressed.connect(_on_build.bind(id))
+			_set_btn_glow(b, false)
 
 func _on_build(id: String) -> void:
 	if id == "sell":
-		sell_pressed.emit()
+		set_build_selected("sell")
+		sell_pressed.emit()  # enter sell mode; click tower to confirm
 	else:
 		set_build_selected(id)
 		build_pressed.emit(id)
 
-
 func _style_panels() -> void:
-	for path in ["%TopBarPanel", "%Minimap", "%FocusCard", "%BuildTrayPanel"]:
+	for path in ["%ResourcesPill", "%WavePillPanel", "%SysPill", "%Minimap", "%FocusCard", "%BuildTrayPanel"]:
 		var n := get_node_or_null(path)
 		if n is PanelContainer:
 			var sb := StyleBoxFlat.new()
