@@ -38,13 +38,17 @@ func set_resources(lives: int, gold: int, lives_max: int = 40) -> void:
 	lives_label.text = "♥ %d / %d" % [lives, lives_max]
 	gold_label.text = "🪙 %d" % gold
 
-func set_wave(n: int, total: int, secs: float) -> void:
+func set_wave(n: int, total: int, secs: float, duration: float = -1.0) -> void:
 	wave_label.text = "Wave %d / %d" % [n, total]
-	var m := int(secs) / 60
-	var s := int(secs) % 60
+	var left := maxf(secs, 0.0)
+	var m := int(left) / 60
+	var s := int(left) % 60
 	timer_label.text = "%02d:%02d" % [m, s]
-	wave_bar.max_value = maxf(secs, 1.0)
-	wave_bar.value = clampf(secs, 0.0, wave_bar.max_value)
+	if duration > 0.0:
+		wave_bar.max_value = duration
+	elif wave_bar.max_value < 1.0:
+		wave_bar.max_value = maxf(left, 1.0)
+	wave_bar.value = clampf(left, 0.0, wave_bar.max_value)
 
 func show_tower(data) -> void:
 	if data == null:
@@ -61,7 +65,7 @@ func set_build_selected(id: String) -> void:
 	_selected_build = id
 	for btn_id in _build_buttons:
 		var btn: Button = _build_buttons[btn_id]
-		var on := btn_id == id
+		var on: bool = btn_id == id
 		btn.button_pressed = on
 		_set_btn_glow(btn, on)
 
