@@ -44,7 +44,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
 theme_override_font_sizes/font_size = 18
-text = "Gold 220"
+text = "Gold 200"
 
 [node name="WavePillPanel" type="PanelContainer" parent="TopRow"]
 unique_name_in_owner = true
@@ -159,12 +159,12 @@ text = "Range  200   (+16)"
 [node name="FocusUpgradeCost" type="Label" parent="FocusCard/FocusVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Upgrade  $70"
+text = "Upgrade  $55"
 
 [node name="FocusSellRefund" type="Label" parent="FocusCard/FocusVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Refund  $25"
+text = "Refund  $22"
 
 [node name="FocusActions" type="HBoxContainer" parent="FocusCard/FocusVBox"]
 layout_mode = 2
@@ -190,9 +190,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -320.0
+offset_left = -360.0
 offset_top = -96.0
-offset_right = 320.0
+offset_right = 360.0
 offset_bottom = -16.0
 
 [node name="BuildTray" type="HBoxContainer" parent="BuildTrayPanel"]
@@ -202,31 +202,31 @@ alignment = 1
 theme_override_constants/separation = 8
 
 [node name="TowerBtn_archer" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(72, 64)
 layout_mode = 2
-text = "Arch"
+text = "Arch\n$40"
 
 [node name="TowerBtn_cannon" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(72, 64)
 layout_mode = 2
-text = "Cann"
+text = "Cann\n$75"
 
 [node name="TowerBtn_frost" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(72, 64)
 layout_mode = 2
-text = "Frost"
+text = "Frost\n$55"
 
 [node name="TowerBtn_lightning" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(72, 64)
 layout_mode = 2
-text = "Bolt"
+text = "Bolt\n$85"
 
 [node name="TowerBtn_support" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(72, 64)
 layout_mode = 2
-text = "Aura"
+text = "Aura\n$65"
 
 [node name="TowerBtn_sell" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(72, 64)
 layout_mode = 2
 text = "Sell"

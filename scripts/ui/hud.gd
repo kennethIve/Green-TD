@@ -11,6 +11,17 @@ signal wave_pressed
 const ACCENT := Color("3DDC84")
 const PANEL_BG := Color(0.08, 0.1, 0.09, 0.85)
 const SELL_RED := Color(0.9, 0.3, 0.3)
+const DIM := Color(0.55, 0.55, 0.55, 0.85)
+
+const TowerScript = preload("res://scripts/tower/tower.gd")
+const TRAY_LABELS := {
+	"archer": "Arch",
+	"cannon": "Cann",
+	"frost": "Frost",
+	"lightning": "Bolt",
+	"support": "Aura",
+	"sell": "Sell",
+}
 
 @onready var lives_label: Label = %LivesLabel
 @onready var gold_label: Label = %GoldLabel
@@ -29,15 +40,19 @@ const SELL_RED := Color(0.9, 0.3, 0.3)
 
 var _build_buttons: Dictionary = {}
 var _selected_build: String = ""
+var _gold: int = 0
 
 func _ready() -> void:
 	_style_panels()
 	_wire_buttons()
+	_refresh_tray_costs()
 	show_tower(null)
 
 func set_resources(lives: int, gold: int, lives_max: int = 40) -> void:
+	_gold = gold
 	lives_label.text = "HP %d / %d" % [lives, lives_max]
 	gold_label.text = "Gold %d" % gold
+	_refresh_tray_afford()
 
 func set_wave(n: int, total: int, secs: float, duration: float = -1.0) -> void:
 	wave_label.text = "Wave %d / %d" % [n, total]
@@ -69,16 +84,41 @@ func set_build_selected(id: String) -> void:
 		var btn: Button = _build_buttons[btn_id]
 		var on: bool = btn_id == id
 		btn.button_pressed = on
-		_set_btn_glow(btn, on)
+		_set_btn_glow(btn, on, btn_id)
+	_refresh_tray_afford()
 
-func _set_btn_glow(btn: Button, on: bool) -> void:
+func _tower_cost(id: String) -> int:
+	if id == "sell":
+		return 0
+	var d: Dictionary = TowerScript.DEFS.get(id, {})
+	return int(d.get("cost", 0))
+
+func _refresh_tray_costs() -> void:
+	for id in _build_buttons:
+		var btn: Button = _build_buttons[id]
+		var label: String = str(TRAY_LABELS.get(id, id))
+		if id == "sell":
+			btn.text = label
+		else:
+			btn.text = "%s\n$%d" % [label, _tower_cost(id)]
+
+func _refresh_tray_afford() -> void:
+	for id in _build_buttons:
+		var btn: Button = _build_buttons[id]
+		var cost: int = _tower_cost(id)
+		var can: bool = id == "sell" or _gold >= cost
+		# Keep clickable so player can still select; dim to show unaffordable.
+		btn.modulate = Color.WHITE if can else DIM
+		_set_btn_glow(btn, id == _selected_build, id)
+
+func _set_btn_glow(btn: Button, on: bool, id: String = "") -> void:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.12, 0.16, 0.14, 0.95)
 	sb.set_corner_radius_all(10)
 	sb.content_margin_left = 6
 	sb.content_margin_right = 6
-	sb.content_margin_top = 6
-	sb.content_margin_bottom = 6
+	sb.content_margin_top = 4
+	sb.content_margin_bottom = 4
 	if on:
 		sb.border_width_left = 3
 		sb.border_width_right = 3
@@ -90,8 +130,12 @@ func _set_btn_glow(btn: Button, on: bool) -> void:
 	btn.add_theme_stylebox_override("normal", sb)
 	btn.add_theme_stylebox_override("pressed", sb)
 	btn.add_theme_stylebox_override("hover", sb)
-	if on:
+	var cost: int = _tower_cost(id) if id != "" else 0
+	var can: bool = id == "" or id == "sell" or _gold >= cost
+	if on and can:
 		btn.add_theme_color_override("font_color", ACCENT)
+	elif not can:
+		btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	else:
 		btn.remove_theme_color_override("font_color")
 
@@ -110,9 +154,9 @@ func _wire_buttons() -> void:
 		if build_tray.has_node(node_name):
 			var b: Button = build_tray.get_node(node_name)
 			_build_buttons[id] = b
-			b.custom_minimum_size = Vector2(64, 64)
+			b.custom_minimum_size = Vector2(72, 64)
 			b.pressed.connect(_on_build.bind(id))
-			_set_btn_glow(b, false)
+			_set_btn_glow(b, false, id)
 
 func _on_build(id: String) -> void:
 	if id == "sell":

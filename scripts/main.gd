@@ -2,7 +2,7 @@ extends Node2D
 ## Green Circle TD - 4-corner axis-aligned rings, multi-tower, center leak.
 
 const START_LIVES := 40
-const START_GOLD := 220
+const START_GOLD := 200  # ~4 archers (40); WC3 ref start 1000 on different tower scale
 ## Line2D path width is 26 → visual half ~13; exclusion uses 26 (ribbon + margin).
 ## Ghost footprint_r and _on_path BOTH use this — do not fork a second path radius.
 const PATH_HALF_WIDTH := 26.0

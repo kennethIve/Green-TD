@@ -21,12 +21,14 @@ var _fx_nodes: Array = []
 
 # Fire intervals (s): WC3-like cadence — archer fastest, lightning medium-fast,
 # frost medium, cannon slow heavy, support slow aura breathe.
+# Economy: Green Circle–like bands (WC3 绿外 ref: GiveJB=8 kill base, start~1000 on
+# expensive-tower map; sell≈point value). Exact unit golds not in war3map.j — approx.
 const DEFS := {
-	"archer": {"dmg": 7, "range": 200.0, "rate": 0.40, "cost": 50, "up": 70, "sell": 25, "slow": 1.0, "aura": 0.0, "color": Color(0.35, 0.75, 0.45)},
-	"cannon": {"dmg": 28, "range": 150.0, "rate": 1.40, "cost": 80, "up": 100, "sell": 40, "slow": 1.0, "aura": 0.0, "color": Color(0.75, 0.45, 0.25)},
-	"frost": {"dmg": 5, "range": 170.0, "rate": 0.75, "cost": 60, "up": 80, "sell": 30, "slow": 0.55, "aura": 0.0, "color": Color(0.4, 0.7, 0.95)},
-	"lightning": {"dmg": 11, "range": 220.0, "rate": 0.55, "cost": 90, "up": 110, "sell": 45, "slow": 1.0, "aura": 0.0, "color": Color(0.85, 0.85, 0.3)},
-	"support": {"dmg": 0, "range": 160.0, "rate": 1.80, "cost": 70, "up": 90, "sell": 35, "slow": 1.0, "aura": 0.25, "color": Color(0.7, 0.4, 0.85)},
+	"archer": {"dmg": 7, "range": 200.0, "rate": 0.40, "cost": 40, "up": 55, "sell": 22, "slow": 1.0, "aura": 0.0, "color": Color(0.35, 0.75, 0.45)},
+	"cannon": {"dmg": 28, "range": 150.0, "rate": 1.40, "cost": 75, "up": 95, "sell": 42, "slow": 1.0, "aura": 0.0, "color": Color(0.75, 0.45, 0.25)},
+	"frost": {"dmg": 5, "range": 170.0, "rate": 0.75, "cost": 55, "up": 70, "sell": 30, "slow": 0.55, "aura": 0.0, "color": Color(0.4, 0.7, 0.95)},
+	"lightning": {"dmg": 11, "range": 220.0, "rate": 0.55, "cost": 85, "up": 105, "sell": 48, "slow": 1.0, "aura": 0.0, "color": Color(0.85, 0.85, 0.3)},
+	"support": {"dmg": 0, "range": 160.0, "rate": 1.80, "cost": 65, "up": 80, "sell": 36, "slow": 1.0, "aura": 0.25, "color": Color(0.7, 0.4, 0.85)},
 }
 
 const ART_ID := {
@@ -65,7 +67,7 @@ func upgrade() -> bool:
 	if aura_damage_bonus > 0.0:
 		aura_damage_bonus += 0.1
 	sell_refund = int(sell_refund * 1.4)
-	upgrade_cost = int(upgrade_cost * 1.5)
+	upgrade_cost = int(upgrade_cost * 1.35)  # softer early progression (was 1.5)
 	_refresh_sprite()
 	queue_redraw()
 	return true

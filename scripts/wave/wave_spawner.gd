@@ -65,7 +65,8 @@ func _spawn_wave() -> void:
 	var ctype := _creep_type_for_wave(wave_index)
 	var ts: Dictionary = TYPE_STATS.get(ctype, TYPE_STATS[0])
 	var base_hp := 20 + wave_index * hp_per_wave
-	var base_rew := 6 + wave_index * 2
+	# WC3 GiveJB=8 + LVL/3; solo 8-wave uses +1.5/wave for readable scaling
+	var base_rew := 8 + int((wave_index - 1) * 1.5)
 	var base_spd := 80.0 + wave_index * 4.0
 	for i in creeps_per_corner:
 		for pts in paths:
