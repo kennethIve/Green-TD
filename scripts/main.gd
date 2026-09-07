@@ -3,9 +3,11 @@ extends Node2D
 
 const START_LIVES := 40
 const START_GOLD := 220
-## Line2D path width is 26 → half ~13; use ~26 so exclusion covers the visible ribbon + margin.
+## Line2D path width is 26 → visual half ~13; exclusion uses 26 (ribbon + margin).
+## Ghost footprint_r and _on_path BOTH use this — do not fork a second path radius.
 const PATH_HALF_WIDTH := 26.0
 ## Tower sprites ~64px; keep centers far enough that bases do not stack.
+## Ghost + _place_tower share this via _can_place.
 const TOWER_MIN_SEP := 44.0
 const TOWER_PICK_RADIUS := 32.0
 const CENTER_BLOCK_RADIUS := 55.0
@@ -14,11 +16,14 @@ const GHOST_BAD := Color(0.92, 0.22, 0.22)
 const TowerScript = preload("res://scripts/tower/tower.gd")
 
 ## Follow-cursor placement preview (tier-1 art + legal/illegal tint).
+## Validity color MUST mirror Main._can_place only — never a wider local radius.
 class PlacementGhost extends Node2D:
 	var legal: bool = true
 	var flash_t: float = 0.0
 	var shake_t: float = 0.0
 	var _sprite: Sprite2D
+	## Footprint ring matches path exclusion (same constant as _on_path).
+	var footprint_r: float = 26.0
 
 	func _ensure_sprite() -> void:
 		if _sprite != null and is_instance_valid(_sprite):
@@ -26,6 +31,7 @@ class PlacementGhost extends Node2D:
 		_sprite = Sprite2D.new()
 		_sprite.name = "Sprite"
 		_sprite.centered = true
+		# Art offset is visual-only; legality uses the ghost/node origin (= cursor).
 		_sprite.position = Vector2(0, -4)
 		add_child(_sprite)
 
@@ -46,7 +52,12 @@ class PlacementGhost extends Node2D:
 		queue_redraw()
 
 	func set_legal(ok: bool) -> void:
+		# Becoming legal must clear illegal flash — otherwise _draw stays RED while
+		# _can_place is already true and a click would succeed (P0 desync).
+		if ok:
+			flash_t = 0.0
 		if legal == ok:
+			queue_redraw()
 			return
 		legal = ok
 		if not ok:
@@ -62,10 +73,13 @@ class PlacementGhost extends Node2D:
 	func tick(delta: float, world_pos: Vector2) -> void:
 		flash_t = maxf(flash_t - delta, 0.0)
 		shake_t = maxf(shake_t - delta, 0.0)
+		# Do not shake the checked origin — keep node on cursor; shake sprite only.
+		global_position = world_pos
 		var shake := Vector2.ZERO
 		if shake_t > 0.0:
 			shake = Vector2(randf_range(-3.0, 3.0), randf_range(-3.0, 3.0))
-		global_position = world_pos + shake
+		if _sprite:
+			_sprite.position = Vector2(0, -4) + shake
 		var tint := GHOST_OK if legal else GHOST_BAD
 		var a := 0.55 if flash_t <= 0.0 else 0.95
 		if _sprite:
@@ -73,13 +87,14 @@ class PlacementGhost extends Node2D:
 		queue_redraw()
 
 	func _draw() -> void:
+		# Never paint red while legal (flash is illegal-only emphasis).
 		var col := GHOST_OK if legal else GHOST_BAD
-		if flash_t > 0.0:
-			col = GHOST_BAD
-		var border_a := 0.95 if flash_t > 0.0 else 0.85
-		var fill := Color(col.r, col.g, col.b, 0.40)
-		draw_circle(Vector2.ZERO, 26.0, fill)
-		draw_arc(Vector2.ZERO, 28.0, 0.0, TAU, 48, Color(col.r, col.g, col.b, border_a), 2.5, true)
+		var border_a := 0.95 if (flash_t > 0.0 and not legal) else 0.85
+		var fill_a := 0.55 if (flash_t > 0.0 and not legal) else 0.40
+		var fill := Color(col.r, col.g, col.b, fill_a)
+		var r := footprint_r
+		draw_circle(Vector2.ZERO, r, fill)
+		draw_arc(Vector2.ZERO, r + 2.0, 0.0, TAU, 48, Color(col.r, col.g, col.b, border_a), 2.5, true)
 		if _sprite == null or _sprite.texture == null:
 			draw_circle(Vector2.ZERO, 14.0, Color(col.r, col.g, col.b, 0.7))
 
@@ -100,6 +115,7 @@ var _wave_end_msec: int = 0
 var _focus_open: bool = false
 var _building: bool = true
 var _ghost: PlacementGhost
+var _ghost_hide_t: float = 0.0
 
 func _ready() -> void:
 	spawner.creep_leaked.connect(_on_leak)
@@ -126,6 +142,7 @@ func _ready() -> void:
 	_building = true
 	_ghost = PlacementGhost.new()
 	_ghost.name = "PlacementGhost"
+	_ghost.footprint_r = PATH_HALF_WIDTH
 	add_child(_ghost)
 	_ghost.set_art(_build_id)
 	_refresh_hud()
@@ -328,6 +345,12 @@ func _place_tower(pos: Vector2, id: String, from_player: bool = false) -> bool:
 	_select_tower(tower)
 	_refresh_hud()
 	status_label.text = "Built %s ($%d)" % [id, cost]
+	# After place, cursor sits on the new tower footprint — hide ghost briefly so it
+	# does not immediately flip RED via TOWER_MIN_SEP against the tower we just built.
+	if from_player and _ghost:
+		_ghost_hide_t = 0.35
+		_ghost.visible = false
+		_ghost.set_legal(true)
 	return true
 
 func _on_build_pressed(id: String) -> void:
@@ -354,6 +377,7 @@ func _sell_tower(t: Node2D) -> void:
 			hud.show_tower(null)
 	t.queue_free()
 	_sell_mode = false
+	_building = true
 	_refresh_hud()
 	status_label.text = "Sold"
 
@@ -392,15 +416,21 @@ func _lose() -> void:
 func _update_placement_ghost(delta: float) -> void:
 	if _ghost == null:
 		return
+	_ghost_hide_t = maxf(_ghost_hide_t - delta, 0.0)
 	# Primary feedback is the ghost; hide in sell / not building / ended / over UI.
 	if _ended or _sell_mode or not _building:
 		_ghost.visible = false
 		return
+	if _ghost_hide_t > 0.0:
+		_ghost.visible = false
+		return
+	# Same cursor space as _unhandled_input → _place_tower (no sprite-offset pos).
 	var pos := get_global_mouse_position()
 	if _over_ui(pos):
 		_ghost.visible = false
 		return
 	_ghost.visible = true
+	# One function, one radii set — identical gate to click-to-place.
 	var check: Dictionary = _can_place(pos, _build_id)
 	_ghost.set_legal(bool(check["ok"]))
 	_ghost.tick(delta, pos)
