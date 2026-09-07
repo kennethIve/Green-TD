@@ -190,10 +190,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -360.0
-offset_top = -96.0
-offset_right = 360.0
-offset_bottom = -16.0
+offset_left = -400.0
+offset_top = -108.0
+offset_right = 400.0
+offset_bottom = -12.0
 
 [node name="BuildTray" type="HBoxContainer" parent="BuildTrayPanel"]
 unique_name_in_owner = true
@@ -202,31 +202,37 @@ alignment = 1
 theme_override_constants/separation = 8
 
 [node name="TowerBtn_archer" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(72, 64)
+custom_minimum_size = Vector2(84, 76)
 layout_mode = 2
+clip_text = false
 text = "Arch\n$40"
 
 [node name="TowerBtn_cannon" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(72, 64)
+custom_minimum_size = Vector2(84, 76)
 layout_mode = 2
+clip_text = false
 text = "Cann\n$75"
 
 [node name="TowerBtn_frost" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(72, 64)
+custom_minimum_size = Vector2(84, 76)
 layout_mode = 2
+clip_text = false
 text = "Frost\n$55"
 
 [node name="TowerBtn_lightning" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(72, 64)
+custom_minimum_size = Vector2(84, 76)
 layout_mode = 2
+clip_text = false
 text = "Bolt\n$85"
 
 [node name="TowerBtn_support" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(72, 64)
+custom_minimum_size = Vector2(84, 76)
 layout_mode = 2
+clip_text = false
 text = "Aura\n$65"
 
 [node name="TowerBtn_sell" type="Button" parent="BuildTrayPanel/BuildTray"]
-custom_minimum_size = Vector2(72, 64)
+custom_minimum_size = Vector2(84, 76)
 layout_mode = 2
+clip_text = false
 text = "Sell"
