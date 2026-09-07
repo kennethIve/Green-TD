@@ -18,6 +18,7 @@ var _build_id: String = "archer"
 var _sell_mode: bool = false
 var _selected_tower: Node2D = null
 var _wave_time_left: float = 0.0
+var _wave_duration: float = 24.0
 
 func _ready() -> void:
 	spawner.creep_leaked.connect(_on_leak)
@@ -46,7 +47,7 @@ func _process(delta: float) -> void:
 		return
 	_wave_time_left = maxf(_wave_time_left - delta, 0.0)
 	if hud.has_method("set_wave"):
-		hud.set_wave(spawner.wave_index, spawner.total_waves, _wave_time_left)
+		hud.set_wave(spawner.wave_index, spawner.total_waves, _wave_time_left, _wave_duration)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _ended:
@@ -174,9 +175,10 @@ func _on_kill(reward: int) -> void:
 	_refresh_hud()
 
 func _on_wave_started(index: int, total: int) -> void:
-	_wave_time_left = 24.0
+	_wave_duration = 24.0
+	_wave_time_left = _wave_duration
 	if hud.has_method("set_wave"):
-		hud.set_wave(index, total, _wave_time_left)
+		hud.set_wave(index, total, _wave_time_left, _wave_duration)
 	status_label.text = "Wave %d / %d — 4 corners" % [index, total]
 
 func _on_win() -> void:
@@ -192,3 +194,4 @@ func _lose() -> void:
 func _refresh_hud() -> void:
 	if hud.has_method("set_resources"):
 		hud.set_resources(lives, gold, START_LIVES)
+
