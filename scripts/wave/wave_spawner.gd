@@ -9,8 +9,8 @@ signal creep_killed(reward: int)
 
 @export var creep_scene: PackedScene
 @export var path_paths: Array[NodePath] = []
-@export var creeps_per_corner: int = 3
-@export var spawn_interval: float = 0.45
+@export var creeps_per_corner: int = 4
+@export var spawn_interval: float = 0.40
 @export var total_waves: int = 8
 @export var hp_per_wave: int = 8
 
@@ -67,10 +67,11 @@ func _spawn_wave() -> void:
 	var base_hp := 20 + wave_index * hp_per_wave
 	# WC3 GiveJB=8 + LVL/3; solo 8-wave uses +1.5/wave for readable scaling
 	var base_rew := 8 + int((wave_index - 1) * 1.5)
-	var base_spd := 80.0 + wave_index * 4.0
+	# WC3 SpawnWaves1 period=0.40; all corners fire together each tick.
+	# Solo 8-wave: slower early, modest late ramp (avoid teleport-fast W7–8).
+	var base_spd := 72.0 + wave_index * 3.5
 	for i in creeps_per_corner:
 		for pts in paths:
-			await get_tree().create_timer(spawn_interval).timeout
 			var creep = creep_scene.instantiate()
 			creep.max_hp = maxi(1, int(round(base_hp * float(ts["hp"]))))
 			creep.reward = maxi(1, int(round(base_rew * float(ts["rew"]))))
@@ -80,6 +81,8 @@ func _spawn_wave() -> void:
 			creep.leaked.connect(_on_leaked)
 			creep.died.connect(_on_died)
 			_alive += 1
+		if i + 1 < creeps_per_corner:
+			await get_tree().create_timer(spawn_interval).timeout
 	_spawning = false
 	_check_clear()
 

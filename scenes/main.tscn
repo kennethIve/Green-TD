@@ -443,7 +443,8 @@ default_color = Color(0.22, 0.32, 0.24, 0.85)
 script = ExtResource("4_wave")
 creep_scene = ExtResource("5_creep")
 path_paths = Array[NodePath]([NodePath("../PathTL"), NodePath("../PathTR"), NodePath("../PathBR"), NodePath("../PathBL")])
-creeps_per_corner = 2
+creeps_per_corner = 4
+spawn_interval = 0.4
 total_waves = 8
 
 [node name="Towers" type="Node2D" parent="."]
