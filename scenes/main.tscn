@@ -28,105 +28,286 @@ offset_bottom = 400.0
 mouse_filter = 2
 color = Color(0.24, 0.86, 0.52, 0.35)
 
-[node name="CreepPath" type="Node2D" parent="."]
+[node name="PathTL" type="Node2D" parent="."]
 script = ExtResource("3_path")
 
-[node name="P1" type="Marker2D" parent="CreepPath"]
+[node name="M1" type="Marker2D" parent="PathTL"]
 position = Vector2(80, 80)
 
-[node name="P2" type="Marker2D" parent="CreepPath"]
-position = Vector2(640, 60)
-
-[node name="P3" type="Marker2D" parent="CreepPath"]
+[node name="M2" type="Marker2D" parent="PathTL"]
 position = Vector2(1200, 80)
 
-[node name="P4" type="Marker2D" parent="CreepPath"]
-position = Vector2(1220, 360)
-
-[node name="P5" type="Marker2D" parent="CreepPath"]
+[node name="M3" type="Marker2D" parent="PathTL"]
 position = Vector2(1200, 640)
 
-[node name="P6" type="Marker2D" parent="CreepPath"]
-position = Vector2(640, 660)
-
-[node name="P7" type="Marker2D" parent="CreepPath"]
+[node name="M4" type="Marker2D" parent="PathTL"]
 position = Vector2(80, 640)
 
-[node name="P8" type="Marker2D" parent="CreepPath"]
-position = Vector2(60, 360)
+[node name="M5" type="Marker2D" parent="PathTL"]
+position = Vector2(80, 80)
 
-[node name="P9" type="Marker2D" parent="CreepPath"]
-position = Vector2(200, 200)
+[node name="M6" type="Marker2D" parent="PathTL"]
+position = Vector2(200, 80)
 
-[node name="P10" type="Marker2D" parent="CreepPath"]
-position = Vector2(640, 140)
+[node name="M7" type="Marker2D" parent="PathTL"]
+position = Vector2(200, 160)
 
-[node name="P11" type="Marker2D" parent="CreepPath"]
-position = Vector2(1080, 200)
+[node name="M8" type="Marker2D" parent="PathTL"]
+position = Vector2(1080, 160)
 
-[node name="P12" type="Marker2D" parent="CreepPath"]
-position = Vector2(1140, 360)
+[node name="M9" type="Marker2D" parent="PathTL"]
+position = Vector2(1080, 560)
 
-[node name="P13" type="Marker2D" parent="CreepPath"]
-position = Vector2(1080, 520)
+[node name="M10" type="Marker2D" parent="PathTL"]
+position = Vector2(200, 560)
 
-[node name="P14" type="Marker2D" parent="CreepPath"]
-position = Vector2(640, 580)
+[node name="M11" type="Marker2D" parent="PathTL"]
+position = Vector2(200, 160)
 
-[node name="P15" type="Marker2D" parent="CreepPath"]
-position = Vector2(200, 520)
+[node name="M12" type="Marker2D" parent="PathTL"]
+position = Vector2(400, 160)
 
-[node name="P16" type="Marker2D" parent="CreepPath"]
-position = Vector2(140, 360)
+[node name="M13" type="Marker2D" parent="PathTL"]
+position = Vector2(400, 260)
 
-[node name="P17" type="Marker2D" parent="CreepPath"]
-position = Vector2(320, 280)
+[node name="M14" type="Marker2D" parent="PathTL"]
+position = Vector2(880, 260)
 
-[node name="P18" type="Marker2D" parent="CreepPath"]
-position = Vector2(640, 220)
+[node name="M15" type="Marker2D" parent="PathTL"]
+position = Vector2(880, 460)
 
-[node name="P19" type="Marker2D" parent="CreepPath"]
-position = Vector2(960, 280)
+[node name="M16" type="Marker2D" parent="PathTL"]
+position = Vector2(400, 460)
 
-[node name="P20" type="Marker2D" parent="CreepPath"]
-position = Vector2(960, 440)
+[node name="M17" type="Marker2D" parent="PathTL"]
+position = Vector2(400, 260)
 
-[node name="P21" type="Marker2D" parent="CreepPath"]
-position = Vector2(640, 500)
+[node name="M18" type="Marker2D" parent="PathTL"]
+position = Vector2(640, 260)
 
-[node name="P22" type="Marker2D" parent="CreepPath"]
-position = Vector2(320, 440)
-
-[node name="P23" type="Marker2D" parent="CreepPath"]
-position = Vector2(400, 360)
-
-[node name="P24" type="Marker2D" parent="CreepPath"]
+[node name="M19" type="Marker2D" parent="PathTL"]
 position = Vector2(640, 360)
 
-[node name="PathLine" type="Line2D" parent="CreepPath"]
+[node name="Line" type="Line2D" parent="PathTL"]
 z_index = -1
-points = PackedVector2Array(80, 80, 640, 60, 1200, 80, 1220, 360, 1200, 640, 640, 660, 80, 640, 60, 360, 200, 200, 640, 140, 1080, 200, 1140, 360, 1080, 520, 640, 580, 200, 520, 140, 360, 320, 280, 640, 220, 960, 280, 960, 440, 640, 500, 320, 440, 400, 360, 640, 360)
-width = 28.0
-default_color = Color(0.2, 0.28, 0.22, 0.9)
+points = PackedVector2Array(80, 80, 1200, 80, 1200, 640, 80, 640, 80, 80, 200, 80, 200, 160, 1080, 160, 1080, 560, 200, 560, 200, 160, 400, 160, 400, 260, 880, 260, 880, 460, 400, 460, 400, 260, 640, 260, 640, 360)
+width = 22.0
+default_color = Color(0.2, 0.28, 0.22, 0.75)
+[node name="PathTR" type="Node2D" parent="."]
+script = ExtResource("3_path")
+
+[node name="M1" type="Marker2D" parent="PathTR"]
+position = Vector2(1200, 80)
+
+[node name="M2" type="Marker2D" parent="PathTR"]
+position = Vector2(1200, 640)
+
+[node name="M3" type="Marker2D" parent="PathTR"]
+position = Vector2(80, 640)
+
+[node name="M4" type="Marker2D" parent="PathTR"]
+position = Vector2(80, 80)
+
+[node name="M5" type="Marker2D" parent="PathTR"]
+position = Vector2(1200, 80)
+
+[node name="M6" type="Marker2D" parent="PathTR"]
+position = Vector2(1080, 80)
+
+[node name="M7" type="Marker2D" parent="PathTR"]
+position = Vector2(1080, 160)
+
+[node name="M8" type="Marker2D" parent="PathTR"]
+position = Vector2(1080, 560)
+
+[node name="M9" type="Marker2D" parent="PathTR"]
+position = Vector2(200, 560)
+
+[node name="M10" type="Marker2D" parent="PathTR"]
+position = Vector2(200, 160)
+
+[node name="M11" type="Marker2D" parent="PathTR"]
+position = Vector2(1080, 160)
+
+[node name="M12" type="Marker2D" parent="PathTR"]
+position = Vector2(880, 160)
+
+[node name="M13" type="Marker2D" parent="PathTR"]
+position = Vector2(880, 260)
+
+[node name="M14" type="Marker2D" parent="PathTR"]
+position = Vector2(880, 460)
+
+[node name="M15" type="Marker2D" parent="PathTR"]
+position = Vector2(400, 460)
+
+[node name="M16" type="Marker2D" parent="PathTR"]
+position = Vector2(400, 260)
+
+[node name="M17" type="Marker2D" parent="PathTR"]
+position = Vector2(880, 260)
+
+[node name="M18" type="Marker2D" parent="PathTR"]
+position = Vector2(640, 260)
+
+[node name="M19" type="Marker2D" parent="PathTR"]
+position = Vector2(640, 360)
+
+[node name="Line" type="Line2D" parent="PathTR"]
+z_index = -1
+points = PackedVector2Array(1200, 80, 1200, 640, 80, 640, 80, 80, 1200, 80, 1080, 80, 1080, 160, 1080, 560, 200, 560, 200, 160, 1080, 160, 880, 160, 880, 260, 880, 460, 400, 460, 400, 260, 880, 260, 640, 260, 640, 360)
+width = 22.0
+default_color = Color(0.2, 0.28, 0.22, 0.75)
+[node name="PathBR" type="Node2D" parent="."]
+script = ExtResource("3_path")
+
+[node name="M1" type="Marker2D" parent="PathBR"]
+position = Vector2(1200, 640)
+
+[node name="M2" type="Marker2D" parent="PathBR"]
+position = Vector2(80, 640)
+
+[node name="M3" type="Marker2D" parent="PathBR"]
+position = Vector2(80, 80)
+
+[node name="M4" type="Marker2D" parent="PathBR"]
+position = Vector2(1200, 80)
+
+[node name="M5" type="Marker2D" parent="PathBR"]
+position = Vector2(1200, 640)
+
+[node name="M6" type="Marker2D" parent="PathBR"]
+position = Vector2(1080, 640)
+
+[node name="M7" type="Marker2D" parent="PathBR"]
+position = Vector2(1080, 560)
+
+[node name="M8" type="Marker2D" parent="PathBR"]
+position = Vector2(200, 560)
+
+[node name="M9" type="Marker2D" parent="PathBR"]
+position = Vector2(200, 160)
+
+[node name="M10" type="Marker2D" parent="PathBR"]
+position = Vector2(1080, 160)
+
+[node name="M11" type="Marker2D" parent="PathBR"]
+position = Vector2(1080, 560)
+
+[node name="M12" type="Marker2D" parent="PathBR"]
+position = Vector2(880, 560)
+
+[node name="M13" type="Marker2D" parent="PathBR"]
+position = Vector2(880, 460)
+
+[node name="M14" type="Marker2D" parent="PathBR"]
+position = Vector2(400, 460)
+
+[node name="M15" type="Marker2D" parent="PathBR"]
+position = Vector2(400, 260)
+
+[node name="M16" type="Marker2D" parent="PathBR"]
+position = Vector2(880, 260)
+
+[node name="M17" type="Marker2D" parent="PathBR"]
+position = Vector2(880, 460)
+
+[node name="M18" type="Marker2D" parent="PathBR"]
+position = Vector2(640, 460)
+
+[node name="M19" type="Marker2D" parent="PathBR"]
+position = Vector2(640, 360)
+
+[node name="Line" type="Line2D" parent="PathBR"]
+z_index = -1
+points = PackedVector2Array(1200, 640, 80, 640, 80, 80, 1200, 80, 1200, 640, 1080, 640, 1080, 560, 200, 560, 200, 160, 1080, 160, 1080, 560, 880, 560, 880, 460, 400, 460, 400, 260, 880, 260, 880, 460, 640, 460, 640, 360)
+width = 22.0
+default_color = Color(0.2, 0.28, 0.22, 0.75)
+[node name="PathBL" type="Node2D" parent="."]
+script = ExtResource("3_path")
+
+[node name="M1" type="Marker2D" parent="PathBL"]
+position = Vector2(80, 640)
+
+[node name="M2" type="Marker2D" parent="PathBL"]
+position = Vector2(80, 80)
+
+[node name="M3" type="Marker2D" parent="PathBL"]
+position = Vector2(1200, 80)
+
+[node name="M4" type="Marker2D" parent="PathBL"]
+position = Vector2(1200, 640)
+
+[node name="M5" type="Marker2D" parent="PathBL"]
+position = Vector2(80, 640)
+
+[node name="M6" type="Marker2D" parent="PathBL"]
+position = Vector2(200, 640)
+
+[node name="M7" type="Marker2D" parent="PathBL"]
+position = Vector2(200, 560)
+
+[node name="M8" type="Marker2D" parent="PathBL"]
+position = Vector2(200, 160)
+
+[node name="M9" type="Marker2D" parent="PathBL"]
+position = Vector2(1080, 160)
+
+[node name="M10" type="Marker2D" parent="PathBL"]
+position = Vector2(1080, 560)
+
+[node name="M11" type="Marker2D" parent="PathBL"]
+position = Vector2(200, 560)
+
+[node name="M12" type="Marker2D" parent="PathBL"]
+position = Vector2(400, 560)
+
+[node name="M13" type="Marker2D" parent="PathBL"]
+position = Vector2(400, 460)
+
+[node name="M14" type="Marker2D" parent="PathBL"]
+position = Vector2(400, 260)
+
+[node name="M15" type="Marker2D" parent="PathBL"]
+position = Vector2(880, 260)
+
+[node name="M16" type="Marker2D" parent="PathBL"]
+position = Vector2(880, 460)
+
+[node name="M17" type="Marker2D" parent="PathBL"]
+position = Vector2(400, 460)
+
+[node name="M18" type="Marker2D" parent="PathBL"]
+position = Vector2(640, 460)
+
+[node name="M19" type="Marker2D" parent="PathBL"]
+position = Vector2(640, 360)
+
+[node name="Line" type="Line2D" parent="PathBL"]
+z_index = -1
+points = PackedVector2Array(80, 640, 80, 80, 1200, 80, 1200, 640, 80, 640, 200, 640, 200, 560, 200, 160, 1080, 160, 1080, 560, 200, 560, 400, 560, 400, 460, 400, 260, 880, 260, 880, 460, 400, 460, 640, 460, 640, 360)
+width = 22.0
+default_color = Color(0.2, 0.28, 0.22, 0.75)
 
 [node name="WaveSpawner" type="Node2D" parent="."]
 script = ExtResource("4_wave")
 creep_scene = ExtResource("5_creep")
-path_path = NodePath("../CreepPath")
-creeps_per_wave = 8
-total_waves = 5
+path_paths = Array[NodePath]([NodePath("../PathTL"), NodePath("../PathTR"), NodePath("../PathBR"), NodePath("../PathBL")])
+creeps_per_corner = 2
+total_waves = 8
 
 [node name="Towers" type="Node2D" parent="."]
 
 [node name="StatusLabel" type="Label" parent="."]
-offset_left = 200.0
+offset_left = 160.0
 offset_top = 680.0
-offset_right = 1080.0
+offset_right = 1120.0
 offset_bottom = 708.0
 theme_override_font_sizes/font_size = 14
-text = "Green Circle — Space next wave · Click place tower · Leak at CENTER"
+text = "Green Circle TD"
 horizontal_alignment = 1
 
 [node name="UI" type="CanvasLayer" parent="."]
+process_mode = 3
 
 [node name="HUD" parent="UI" instance=ExtResource("2_hud")]
